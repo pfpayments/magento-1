@@ -104,7 +104,7 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
                     $reduction = new \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate();
                     $reduction->setLineItemUniqueId($lineItem->getUniqueId());
                     $reduction->setQuantityReduction(0);
-                    $reduction->setUnitPriceReduction($lineItem->getAmountIncludingTax() * $rate / $lineItem->getQuantity());
+                    $reduction->setUnitPriceReduction($this->roundAmount($lineItem->getAmountIncludingTax() * $rate / $lineItem->getQuantity(), $creditmemo->getOrderCurrencyCode()));
                     $fixedReductions[] = $reduction;
                 }
             }

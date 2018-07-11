@@ -21,7 +21,7 @@ class PostFinanceCheckout_Payment_TransactionController extends Mage_Core_Contro
      */
     public function redirectAction()
     {
-        die('OK');
+        $this->getResponse()->setBody('OK');
     }
 
     /**

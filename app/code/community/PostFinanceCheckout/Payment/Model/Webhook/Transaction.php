@@ -102,13 +102,17 @@ class PostFinanceCheckout_Payment_Model_Webhook_Transaction extends PostFinanceC
     protected function failed(\PostFinanceCheckout\Sdk\Model\Transaction $transaction, Mage_Sales_Model_Order $order)
     {
         $invoice = $this->getInvoiceForTransaction($transaction->getLinkedSpaceId(), $transaction->getId(), $order);
-        if ($invoice) {
+        if ($invoice && $invoice->canCancel()) {
             $order->setPostfinancecheckoutPaymentInvoiceAllowManipulation(true);
             $invoice->cancel();
             $order->addRelatedObject($invoice);
         }
 
-        $order->registerCancellation(null, false)->save();
+        if (!$order->isCanceled()) {
+            $order->registerCancellation(null, false)->save();
+        } else {
+            Mage::log('Tried to cancel the order ' . $order->getIncrementId() . ' but it was already cancelled.', null, 'postfinancecheckout.log');
+        }
     }
 
     protected function fulfill(\PostFinanceCheckout\Sdk\Model\Transaction $transaction, Mage_Sales_Model_Order $order)
@@ -127,7 +131,7 @@ class PostFinanceCheckout_Payment_Model_Webhook_Transaction extends PostFinanceC
     {
         $order->getPayment()->registerVoidNotification();
         $invoice = $this->getInvoiceForTransaction($transaction->getLinkedSpaceId(), $transaction->getId(), $order);
-        if ($invoice) {
+        if ($invoice && $invoice->canCancel()) {
             $order->setPostfinancecheckoutPaymentInvoiceAllowManipulation(true);
             $invoice->cancel();
             $order->addRelatedObject($invoice);

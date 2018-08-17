@@ -21,7 +21,7 @@ class PostFinanceCheckout_Payment_Block_Payment_Form extends Mage_Payment_Block_
         parent::_construct();
         $this->setTemplate('postfinancecheckout/payment/form.phtml');
     }
-
+    
     /**
      * Returns the URL to the payment method image.
      *

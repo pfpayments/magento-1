@@ -39,4 +39,22 @@ class PostFinanceCheckout_Payment_Block_Payment_Checkout extends Mage_Payment_Bl
             return false;
         }
     }
+    
+    /**
+     * Returns the URL to PostFinance Checkout's payment page.
+     *
+     * @return string
+     */
+    public function getPaymentPageUrl()
+    {
+        /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
+        $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
+        /* @var Mage_Checkout_Model_Session $checkoutSession */
+        $checkoutSession = Mage::getSingleton('checkout/session');
+        try {
+            return $transactionService->getPaymentPageUrl($checkoutSession->getQuote());
+        } catch (Exception $e) {
+            return false;
+        }
+    }
 }

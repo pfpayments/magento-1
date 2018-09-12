@@ -49,6 +49,12 @@ MagePostFinanceCheckout.Checkout.Type.IWDOnePageCheckout = Class.create(
 				}.bind(this),
 				function() {
 					this.unlockPlaceOrder();
+				}.bind(this),
+				function() {
+					this.unlockPlaceOrder();
+				}.bind(this),
+				function() {
+					this.lockPlaceOrder();
 				}.bind(this)
 			);
 		},

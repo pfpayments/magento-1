@@ -429,6 +429,13 @@ class PostFinanceCheckout_Payment_Model_Payment_Method_Abstract extends Mage_Pay
 
         try {
             $refund = $refundService->refund($refundJob->getSpaceId(), $refund);
+        } catch (\PostFinanceCheckout\Sdk\ApiException $e) {
+            if ($e->getResponseObject() instanceof \PostFinanceCheckout\Sdk\Model\ClientError) {
+                $refundJob->delete();
+                Mage::throwException($e->getResponseObject()->getMessage());
+            } else {
+                Mage::throwException($this->getHelper()->__('There has been an error while sending the refund to the gateway.'));
+            }
         } catch (Exception $e) {
             Mage::throwException($this->getHelper()->__('There has been an error while sending the refund to the gateway.'));
         }

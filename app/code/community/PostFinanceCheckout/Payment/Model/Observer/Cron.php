@@ -31,9 +31,16 @@ class PostFinanceCheckout_Payment_Model_Observer_Cron
             /* @var PostFinanceCheckout_Payment_Model_Entity_RefundJob $refundJob */
             try {
                 $refundService->refund($refundJob->getSpaceId(), $refundJob->getRefund());
+            } catch (\PostFinanceCheckout\Sdk\ApiException $e) {
+                if ($e->getResponseObject() instanceof \PostFinanceCheckout\Sdk\Model\ClientError) {
+                    $refundJob->delete();
+                } else {
+                    Mage::logException($e);
+                }
             } catch (Exception $e) {
                 Mage::logException($e);
             }
         }
     }
+    
 }

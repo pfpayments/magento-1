@@ -233,9 +233,9 @@ class PostFinanceCheckout_Payment_Model_Service_LineItem extends PostFinanceChec
     protected function getAttributeKey($option)
     {
         if (isset($option['option_id']) && !empty($option['option_id'])) {
-            return 'option_' . $option['option_id'];
+            return $this->fixLength('option_' . $option['option_id'], 40);
         } else {
-            return preg_replace('/[^a-z0-9]/', '', strtolower($option['label']));
+            return $this->fixLength(preg_replace('/[^a-z0-9]/', '', strtolower($option['label'])), 40);
         }
     }
     

@@ -291,7 +291,13 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
     {
         if (! isset(self::$possiblePaymentMethodCache[$quote->getId()]) || self::$possiblePaymentMethodCache[$quote->getId()] == null) {
             $transaction = $this->getTransactionByQuote($quote);
-            $paymentMethods = $this->getTransactionService()->fetchPossiblePaymentMethods($transaction->getLinkedSpaceId(), $transaction->getId());
+            
+            try {
+                $paymentMethods = $this->getTransactionService()->fetchPossiblePaymentMethods($transaction->getLinkedSpaceId(), $transaction->getId());
+            } catch (\WhitelabelMachineName\Sdk\ApiException $e) {
+                self::$possiblePaymentMethodCache[$quote->getId()] = [];
+                throw $e;
+            }
 
             /* @var PostFinanceCheckout_Payment_Model_Service_PaymentMethodConfiguration $paymentMethodConfigurationService */
             $paymentMethodConfigurationService = Mage::getSingleton('postfinancecheckout_payment/service_paymentMethodConfiguration');

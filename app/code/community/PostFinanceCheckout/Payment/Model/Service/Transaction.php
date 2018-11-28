@@ -295,7 +295,7 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
             try {
                 $paymentMethods = $this->getTransactionService()->fetchPossiblePaymentMethods($transaction->getLinkedSpaceId(), $transaction->getId());
             } catch (\WhitelabelMachineName\Sdk\ApiException $e) {
-                self::$possiblePaymentMethodCache[$quote->getId()] = [];
+                self::$possiblePaymentMethodCache[$quote->getId()] = array();
                 throw $e;
             }
 
@@ -326,7 +326,10 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
         for ($i = 0; $i < 5; $i++) {
             try {
                 $transaction = $this->getTransactionService()->read($spaceId, $transactionId);
-                if (!($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction) || $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING) {
+                $customerId = $transaction->getCustomerId();
+                if (!($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction)
+                    || $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING
+                    || (!empty($customerId) && $customerId != $order->getCustomerId())) {
                     return $this->createTransactionByOrder($spaceId, $order, $invoice, $chargeFlow);
                 }
                 
@@ -538,7 +541,10 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
         for ($i = 0; $i < 5; $i++) {
             try {
                 $transaction = $this->getTransactionService()->read($quote->getPostfinancecheckoutSpaceId(), $quote->getPostfinancecheckoutTransactionId());
-                if (!($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction) || $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING) {
+                $customerId = $transaction->getCustomerId();
+                if (!($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction)
+                    || $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING
+                    || (!empty($customerId) && $customerId != $quote->getCustomerId())) {
                     return $this->createTransactionByQuote($quote);
                 }
         

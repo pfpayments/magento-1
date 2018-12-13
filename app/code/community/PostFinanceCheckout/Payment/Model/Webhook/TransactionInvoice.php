@@ -67,6 +67,10 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionInvoice extends PostF
 
     protected function capture(\PostFinanceCheckout\Sdk\Model\Transaction $transaction, Mage_Sales_Model_Order $order, $amount, Mage_Sales_Model_Order_Invoice $invoice = null)
     {
+        if ($order->getPostfinancecheckoutCanceled()) {
+            return;
+        }
+        
         $isOrderInReview = ($order->getState() == Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW);
 
         if (! $invoice) {

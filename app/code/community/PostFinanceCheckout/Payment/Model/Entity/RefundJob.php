@@ -48,7 +48,7 @@ class PostFinanceCheckout_Payment_Model_Entity_RefundJob extends Mage_Core_Model
      *
      * @var Mage_Sales_Model_Order
      */
-    private $_order;
+    protected $_order;
 
     /**
      * Initialize resource model
@@ -63,7 +63,7 @@ class PostFinanceCheckout_Payment_Model_Entity_RefundJob extends Mage_Core_Model
         parent::_beforeSave();
 
         if ($this->isObjectNew()) {
-            $this->setCreatedAt(date("Y-m-d H:i:s"));
+            $this->setCreatedAt(Mage::getSingleton('core/date')->date());
         }
     }
 

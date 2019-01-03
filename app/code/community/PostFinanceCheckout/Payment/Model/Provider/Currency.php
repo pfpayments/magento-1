@@ -44,7 +44,8 @@ class PostFinanceCheckout_Payment_Model_Provider_Currency extends PostFinanceChe
 
     protected function fetchData()
     {
-        $currencyService = new \PostFinanceCheckout\Sdk\Service\CurrencyService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        $currencyService = new \PostFinanceCheckout\Sdk\Service\CurrencyService(
+            Mage::helper('postfinancecheckout_payment')->getApiClient());
         return $currencyService->all();
     }
 

@@ -22,15 +22,18 @@ class PostFinanceCheckout_Payment_WebhookController extends Mage_Core_Controller
     public function indexAction()
     {
         $this->getResponse()->setHttpResponseCode(500);
-        $request = new PostFinanceCheckout_Payment_Model_Webhook_Request(json_decode($this->getRequest()->getRawBody()));
+        $request = new PostFinanceCheckout_Payment_Model_Webhook_Request(
+            json_decode($this->getRequest()->getRawBody()));
         try {
             Mage::dispatchEvent(
-                'postfinancecheckout_payment_webhook_' . strtolower($request->getListenerEntityTechnicalName()), array(
-                'request' => $request
-                )
-            );
+                'postfinancecheckout_payment_webhook_' . strtolower($request->getListenerEntityTechnicalName()),
+                array(
+                    'request' => $request
+                ));
         } catch (Exception $e) {
-            Mage::log('The webhook  ' . $request->getEntityId() . ' could not be processed because of an exception: ' . "\n" . $e->__toString(), Zend_Log::ERR, 'postfinancecheckout.log');
+            Mage::log(
+                'The webhook  ' . $request->getEntityId() . ' could not be processed because of an exception: ' . "\n" .
+                $e->__toString(), Zend_Log::ERR, 'postfinancecheckout.log');
             throw $e;
         }
         $this->getResponse()->setHttpResponseCode(200);

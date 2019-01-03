@@ -19,6 +19,7 @@ class PostFinanceCheckout_Payment_Block_Adminhtml_System_Config_Form_Field_State
     protected function _getElementHtml(Varien_Data_Form_Element_Abstract $element)
     {
         $value = $element->getData('value');
-        return $value == 1 ? $this->helper('postfinancecheckout_payment')->__('Yes') : $this->helper('postfinancecheckout_payment')->__('No');
+        return $value == 1 ? $this->helper('postfinancecheckout_payment')->__('Yes') : $this->helper(
+            'postfinancecheckout_payment')->__('No');
     }
 }

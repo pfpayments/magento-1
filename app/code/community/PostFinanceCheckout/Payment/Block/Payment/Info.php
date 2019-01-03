@@ -16,9 +16,7 @@
 class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_Info
 {
 
-    private $transaction = null;
-
-    private $transactionInfo = null;
+    protected $_transactionInfo = null;
 
     protected function _construct()
     {
@@ -33,7 +31,8 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
      */
     public function isCreditmemo()
     {
-        return Mage::app()->getStore()->isAdmin() && strstr($this->getRequest()->getControllerName(), 'creditmemo') !== false;
+        return Mage::app()->getStore()->isAdmin() &&
+            strstr($this->getRequest()->getControllerName(), 'creditmemo') !== false;
     }
 
     /**
@@ -43,7 +42,8 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
      */
     public function isInvoice()
     {
-        return Mage::app()->getStore()->isAdmin() && strstr($this->getRequest()->getControllerName(), 'invoice') !== false;
+        return Mage::app()->getStore()->isAdmin() &&
+            strstr($this->getRequest()->getControllerName(), 'invoice') !== false;
     }
 
     /**
@@ -53,7 +53,8 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
      */
     public function isShipment()
     {
-        return Mage::app()->getStore()->isAdmin() && strstr($this->getRequest()->getControllerName(), 'shipment') !== false;
+        return Mage::app()->getStore()->isAdmin() &&
+            strstr($this->getRequest()->getControllerName(), 'shipment') !== false;
     }
 
     /**
@@ -63,9 +64,11 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
      */
     public function isCustomerDownloadInvoiceAllowed()
     {
-        return $this->getInfo()->getOrder() != null && Mage::getStoreConfigFlag('postfinancecheckout_payment/document/customer_download_invoice', $this->getInfo()
-            ->getOrder()
-            ->getStore());
+        return $this->getInfo()->getOrder() != null && Mage::getStoreConfigFlag(
+            'postfinancecheckout_payment/document/customer_download_invoice',
+            $this->getInfo()
+                ->getOrder()
+                ->getStore());
     }
 
     /**
@@ -75,9 +78,11 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
      */
     public function isCustomerDownloadPackingSlipAllowed()
     {
-        return $this->getInfo()->getOrder() != null && Mage::getStoreConfigFlag('postfinancecheckout_payment/document/customer_download_packing_slip', $this->getInfo()
-            ->getOrder()
-            ->getStore());
+        return $this->getInfo()->getOrder() != null && Mage::getStoreConfigFlag(
+            'postfinancecheckout_payment/document/customer_download_packing_slip',
+            $this->getInfo()
+                ->getOrder()
+                ->getStore());
     }
 
     /**
@@ -90,13 +95,14 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
         if ($this->getTransactionInfo() && Mage::app()->getStore()->isAdmin()) {
             /* @var Mage_Adminhtml_Helper_Data $adminHelper */
             $adminHelper = Mage::helper('adminhtml');
-            return $adminHelper->getUrl('adminhtml/postfinancecheckout_transaction/update', array(
-                'transaction_id' => $this->getTransactionInfo()
-                    ->getTransactionId(),
-                'space_id' => $this->getTransactionInfo()
-                    ->getSpaceId(),
-                '_secure' => true
-            ));
+            return $adminHelper->getUrl('adminhtml/postfinancecheckout_transaction/update',
+                array(
+                    'transaction_id' => $this->getTransactionInfo()
+                        ->getTransactionId(),
+                    'space_id' => $this->getTransactionInfo()
+                        ->getSpaceId(),
+                    '_secure' => true
+                ));
         }
     }
 
@@ -107,30 +113,33 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
      */
     public function getDownloadInvoiceUrl()
     {
-        if (! $this->getTransactionInfo() || ! in_array($this->getTransactionInfo()->getState(), array(
-            \PostFinanceCheckout\Sdk\Model\TransactionState::COMPLETED,
-            \PostFinanceCheckout\Sdk\Model\TransactionState::FULFILL,
-            \PostFinanceCheckout\Sdk\Model\TransactionState::DECLINE
-        ))) {
+        if (! $this->getTransactionInfo() || ! in_array($this->getTransactionInfo()->getState(),
+            array(
+                \PostFinanceCheckout\Sdk\Model\TransactionState::COMPLETED,
+                \PostFinanceCheckout\Sdk\Model\TransactionState::FULFILL,
+                \PostFinanceCheckout\Sdk\Model\TransactionState::DECLINE
+            ))) {
             return false;
         }
-        
+
         if (Mage::app()->getStore()->isAdmin()) {
             /* @var Mage_Adminhtml_Helper_Data $adminHelper */
             $adminHelper = Mage::helper('adminhtml');
-            return $adminHelper->getUrl('adminhtml/postfinancecheckout_transaction/downloadInvoice', array(
-                'transaction_id' => $this->getTransactionInfo()
-                    ->getTransactionId(),
-                'space_id' => $this->getTransactionInfo()
-                    ->getSpaceId(),
-                '_secure' => true
-            ));
+            return $adminHelper->getUrl('adminhtml/postfinancecheckout_transaction/downloadInvoice',
+                array(
+                    'transaction_id' => $this->getTransactionInfo()
+                        ->getTransactionId(),
+                    'space_id' => $this->getTransactionInfo()
+                        ->getSpaceId(),
+                    '_secure' => true
+                ));
         } else {
-            return $this->getUrl('postfinancecheckout/transaction/downloadInvoice', array(
-                'order_id' => $this->getInfo()
-                    ->getOrder()
-                    ->getId()
-            ));
+            return $this->getUrl('postfinancecheckout/transaction/downloadInvoice',
+                array(
+                    'order_id' => $this->getInfo()
+                        ->getOrder()
+                        ->getId()
+                ));
         }
     }
 
@@ -141,26 +150,29 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
      */
     public function getDownloadPackingSlipUrl()
     {
-        if (! $this->getTransactionInfo() || $this->getTransactionInfo()->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::FULFILL) {
+        if (! $this->getTransactionInfo() ||
+            $this->getTransactionInfo()->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::FULFILL) {
             return false;
         }
-        
+
         if (Mage::app()->getStore()->isAdmin()) {
             /* @var Mage_Adminhtml_Helper_Data $adminHelper */
             $adminHelper = Mage::helper('adminhtml');
-            return $adminHelper->getUrl('adminhtml/postfinancecheckout_transaction/downloadPackingSlip', array(
-                'transaction_id' => $this->getTransactionInfo()
-                    ->getTransactionId(),
-                'space_id' => $this->getTransactionInfo()
-                    ->getSpaceId(),
-                '_secure' => true
-            ));
+            return $adminHelper->getUrl('adminhtml/postfinancecheckout_transaction/downloadPackingSlip',
+                array(
+                    'transaction_id' => $this->getTransactionInfo()
+                        ->getTransactionId(),
+                    'space_id' => $this->getTransactionInfo()
+                        ->getSpaceId(),
+                    '_secure' => true
+                ));
         } else {
-            return $this->getUrl('postfinancecheckout/transaction/downloadPackingSlip', array(
-                'order_id' => $this->getInfo()
-                    ->getOrder()
-                    ->getId()
-            ));
+            return $this->getUrl('postfinancecheckout/transaction/downloadPackingSlip',
+                array(
+                    'order_id' => $this->getInfo()
+                        ->getOrder()
+                        ->getId()
+                ));
         }
     }
 
@@ -176,15 +188,16 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
         if ($creditmemo == null || $creditmemo->getPostfinancecheckoutExternalId() == null) {
             return false;
         }
-        
+
         /* @var Mage_Adminhtml_Helper_Data $adminHelper */
         $adminHelper = Mage::helper('adminhtml');
-        return $adminHelper->getUrl('adminhtml/postfinancecheckout_transaction/downloadRefund', array(
-            'external_id' => $creditmemo->getPostfinancecheckoutExternalId(),
-            'space_id' => $this->getTransactionInfo()
-                ->getSpaceId(),
-            '_secure' => true
-        ));
+        return $adminHelper->getUrl('adminhtml/postfinancecheckout_transaction/downloadRefund',
+            array(
+                'external_id' => $creditmemo->getPostfinancecheckoutExternalId(),
+                'space_id' => $this->getTransactionInfo()
+                    ->getSpaceId(),
+                '_secure' => true
+            ));
     }
 
     /**
@@ -194,22 +207,23 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
      */
     public function getTransactionInfo()
     {
-        if ($this->transactionInfo === null) {
+        if ($this->_transactionInfo === null) {
             if ($this->getInfo() instanceof Mage_Sales_Model_Order_Payment) {
                 /* @var PostFinanceCheckout_Payment_Model_Entity_TransactionInfo $transactionInfo */
-                $transactionInfo = Mage::getModel('postfinancecheckout_payment/entity_transactionInfo')->loadByOrder($this->getInfo()
-                    ->getOrder());
+                $transactionInfo = Mage::getModel('postfinancecheckout_payment/entity_transactionInfo')->loadByOrder(
+                    $this->getInfo()
+                        ->getOrder());
                 if ($transactionInfo->getId()) {
-                    $this->transactionInfo = $transactionInfo;
+                    $this->_transactionInfo = $transactionInfo;
                 } else {
-                    $this->transactionInfo = false;
+                    $this->_transactionInfo = false;
                 }
             } else {
-                $this->transactionInfo = false;
+                $this->_transactionInfo = false;
             }
         }
-        
-        return $this->transactionInfo;
+
+        return $this->_transactionInfo;
     }
 
     /**
@@ -237,7 +251,9 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
      */
     public function getTransactionUrl()
     {
-        return Mage::helper('postfinancecheckout_payment')->getBaseGatewayUrl() . '/s/' . $this->getTransactionInfo()->getSpaceId() . '/payment/transaction/view/' . $this->getTransactionInfo()->getTransactionId();
+        return Mage::helper('postfinancecheckout_payment')->getBaseGatewayUrl() . '/s/' .
+            $this->getTransactionInfo()->getSpaceId() . '/payment/transaction/view/' .
+            $this->getTransactionInfo()->getTransactionId();
     }
 
     /**
@@ -294,10 +310,11 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
         if ($this->getTransactionInfo()) {
             /* @var PostFinanceCheckout_Payment_Model_Provider_LabelDescriptor $labelDescriptorProvider */
             $labelDescriptorProvider = Mage::getSingleton('postfinancecheckout_payment/provider_labelDescriptor');
-            
+
             /* @var PostFinanceCheckout_Payment_Model_Provider_LabelDescriptorGroup $labelDescriptorGroupProvider */
-            $labelDescriptorGroupProvider = Mage::getSingleton('postfinancecheckout_payment/provider_labelDescriptorGroup');
-            
+            $labelDescriptorGroupProvider = Mage::getSingleton(
+                'postfinancecheckout_payment/provider_labelDescriptorGroup');
+
             $labelsByGroupId = array();
             foreach ($this->getTransactionInfo()->getLabels() as $descriptorId => $value) {
                 $descriptor = $labelDescriptorProvider->find($descriptorId);
@@ -308,21 +325,22 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
                     );
                 }
             }
-            
+
             $labelsByGroup = array();
             foreach ($labelsByGroupId as $groupId => $labels) {
                 $group = $labelDescriptorGroupProvider->find($groupId);
                 if ($group) {
-                    usort($labels, function ($a, $b) {
-                        return $a['descriptor']->getWeight() - $b['descriptor']->getWeight();
-                    });
+                    usort($labels,
+                        function ($a, $b) {
+                            return $a['descriptor']->getWeight() - $b['descriptor']->getWeight();
+                        });
                     $labelsByGroup[] = array(
                         'group' => $group,
                         'labels' => $labels
                     );
                 }
             }
-            
+
             usort($labelsByGroup, function ($a, $b) {
                 return $a['group']->getWeight() - $b['group']->getWeight();
             });

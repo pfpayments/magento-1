@@ -65,7 +65,7 @@ class PostFinanceCheckout_Payment_Model_Entity_TransactionInfo extends Mage_Core
      *
      * @var Mage_Sales_Model_Order
      */
-    private $_order;
+    protected $_order;
 
     /**
      * Initialize resource model
@@ -80,7 +80,7 @@ class PostFinanceCheckout_Payment_Model_Entity_TransactionInfo extends Mage_Core
         parent::_beforeSave();
 
         if ($this->isObjectNew()) {
-            $this->setCreatedAt(date("Y-m-d H:i:s"));
+            $this->setCreatedAt(Mage::getSingleton('core/date')->date());
         }
     }
 
@@ -124,7 +124,9 @@ class PostFinanceCheckout_Payment_Model_Entity_TransactionInfo extends Mage_Core
         if ($order->getPostfinancecheckoutSpaceId() && $order->getPostfinancecheckoutTransactionId()) {
             /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
             $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
-            $transactionService->updateTransactionInfo($transactionService->getTransaction($order->getPostfinancecheckoutSpaceId(), $order->getPostfinancecheckoutTransactionId()), $order);
+            $transactionService->updateTransactionInfo(
+                $transactionService->getTransaction($order->getPostfinancecheckoutSpaceId(),
+                    $order->getPostfinancecheckoutTransactionId()), $order);
         }
 
         return $this->load($orderId, 'order_id');

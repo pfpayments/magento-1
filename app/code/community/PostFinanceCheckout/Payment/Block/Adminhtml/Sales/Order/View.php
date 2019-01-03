@@ -41,10 +41,9 @@ class PostFinanceCheckout_Payment_Block_Adminhtml_Sales_Order_View extends Mage_
     {
         /* @var Mage_Sales_Model_Order $order */
         $order = Mage::registry('sales_order');
-        return $this->getUrl(
-            'adminhtml/postfinancecheckout_transaction/refund', array(
-            'order_id' => $order->getId()
-            )
-        );
+        return $this->getUrl('adminhtml/postfinancecheckout_transaction/refund',
+            array(
+                'order_id' => $order->getId()
+            ));
     }
 }

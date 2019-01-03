@@ -16,33 +16,42 @@
 class PostFinanceCheckout_Payment_Model_Observer_Core
 {
 
-    private $autoloaderRegistered = false;
+    protected $_autoloaderRegistered = false;
 
     /**
      * Registers an autoloader that provides the generated payment method model classes.
-     * 
-     * The varien autoloader is unregistered and registered again to allow the PostFinance Checkout SDK autoloader to come first.
+     *
+     * The varien autoloader is unregistered and registered again to allow the PostFinance Checkout SDK autoloader to come
+     * first.
      */
     public function addAutoloader()
     {
-        if (! $this->autoloaderRegistered) {
-            spl_autoload_unregister(array(Varien_Autoload::instance(), 'autoload'));
+        if (! $this->_autoloaderRegistered) {
+            spl_autoload_unregister(array(
+                Varien_Autoload::instance(),
+                'autoload'
+            ));
             require_once Mage::getBaseDir('lib') . '/PostFinanceCheckout/Sdk/autoload.php';
-            spl_autoload_register(array(Varien_Autoload::instance(), 'autoload'));
+            spl_autoload_register(array(
+                Varien_Autoload::instance(),
+                'autoload'
+            ));
 
-            set_include_path(get_include_path() . PATH_SEPARATOR . Mage::helper('postfinancecheckout_payment')->getGenerationDirectoryPath());
+            set_include_path(
+                get_include_path() . PATH_SEPARATOR .
+                Mage::helper('postfinancecheckout_payment')->getGenerationDirectoryPath());
 
             spl_autoload_register(
                 function ($class) {
-                if (strpos($class, 'PostFinanceCheckout_Payment_Model_PaymentMethod') === 0) {
-                    $file = Mage::helper('postfinancecheckout_payment')->getGenerationDirectoryPath() . DS . uc_words($class, DIRECTORY_SEPARATOR) . '.php';
-                    if (file_exists($file)) {
-                        require $file;
+                    if (strpos($class, 'PostFinanceCheckout_Payment_Model_PaymentMethod') === 0) {
+                        $file = Mage::helper('postfinancecheckout_payment')->getGenerationDirectoryPath() . DS .
+                        uc_words($class, DIRECTORY_SEPARATOR) . '.php';
+                        if (file_exists($file)) {
+                            require $file;
+                        }
                     }
-                }
-                }, true, true
-            );
-            $this->autoloaderRegistered = true;
+                }, true, true);
+            $this->_autoloaderRegistered = true;
         }
     }
 
@@ -58,20 +67,16 @@ class PostFinanceCheckout_Payment_Model_Observer_Core
 
     /**
      * Initializes the dynamic payment method config values.
-     *
-     * @param Varien_Event_Observer $observer
      */
-    public function frontInitBefore(Varien_Event_Observer $observer)
+    public function frontInitBefore()
     {
         $this->getConfigModel()->initConfigValues();
     }
 
     /**
      * Synchronizes the data with PostFinance Checkout.
-     *
-     * @param Varien_Event_Observer $observer
      */
-    public function configChanged(Varien_Event_Observer $observer)
+    public function configChanged()
     {
         $userId = Mage::getStoreConfig('postfinancecheckout_payment/general/api_user_id');
         $applicationKey = Mage::getStoreConfig('postfinancecheckout_payment/general/api_user_secret');
@@ -79,7 +84,9 @@ class PostFinanceCheckout_Payment_Model_Observer_Core
             try {
                 Mage::dispatchEvent('postfinancecheckout_payment_config_synchronize');
             } catch (Exception $e) {
-                Mage::throwException(Mage::helper('postfinancecheckout_payment')->__('Synchronizing with PostFinance Checkout failed:') . ' ' . $e->getMessage());
+                Mage::throwException(
+                    Mage::helper('postfinancecheckout_payment')->__('Synchronizing with PostFinance Checkout failed:') . ' ' .
+                    $e->getMessage());
             }
         }
     }

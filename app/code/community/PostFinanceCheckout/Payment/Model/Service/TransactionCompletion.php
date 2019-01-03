@@ -21,7 +21,7 @@ class PostFinanceCheckout_Payment_Model_Service_TransactionCompletion extends Po
      *
      * @var \PostFinanceCheckout\Sdk\Service\TransactionCompletionService
      */
-    private $transactionCompletionService;
+    protected $_transactionCompletionService;
 
     /**
      * Completes a transaction completion.
@@ -33,9 +33,8 @@ class PostFinanceCheckout_Payment_Model_Service_TransactionCompletion extends Po
     {
         return $this->getTransactionCompletionService()->completeOnline(
             $payment->getOrder()
-            ->getPostfinancecheckoutSpaceId(), $payment->getOrder()
-            ->getPostfinancecheckoutTransactionId()
-        );
+                ->getPostfinancecheckoutSpaceId(), $payment->getOrder()
+                ->getPostfinancecheckoutTransactionId());
     }
 
     /**
@@ -45,10 +44,11 @@ class PostFinanceCheckout_Payment_Model_Service_TransactionCompletion extends Po
      */
     protected function getTransactionCompletionService()
     {
-        if ($this->transactionCompletionService == null) {
-            $this->transactionCompletionService = new \PostFinanceCheckout\Sdk\Service\TransactionCompletionService($this->getHelper()->getApiClient());
+        if ($this->_transactionCompletionService == null) {
+            $this->_transactionCompletionService = new \PostFinanceCheckout\Sdk\Service\TransactionCompletionService(
+                $this->getHelper()->getApiClient());
         }
 
-        return $this->transactionCompletionService;
+        return $this->_transactionCompletionService;
     }
 }

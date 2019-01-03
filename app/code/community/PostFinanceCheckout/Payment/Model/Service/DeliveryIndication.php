@@ -21,7 +21,7 @@ class PostFinanceCheckout_Payment_Model_Service_DeliveryIndication extends PostF
      *
      * @var \PostFinanceCheckout\Sdk\Service\DeliveryIndicationService
      */
-    private $deliveryIndicationService;
+    protected $_deliveryIndicationService;
 
     /**
      * Marks the delivery indication belonging to the given payment as suitable.
@@ -33,10 +33,10 @@ class PostFinanceCheckout_Payment_Model_Service_DeliveryIndication extends PostF
     {
         $deliveryIndication = $this->getDeliveryIndicationForTransaction(
             $payment->getOrder()
-            ->getPostfinancecheckoutSpaceId(), $payment->getOrder()
-            ->getPostfinancecheckoutTransactionId()
-        );
-        return $this->getDeliveryIndicationService()->markAsSuitable($deliveryIndication->getLinkedSpaceId(), $deliveryIndication->getId());
+                ->getPostfinancecheckoutSpaceId(), $payment->getOrder()
+                ->getPostfinancecheckoutTransactionId());
+        return $this->getDeliveryIndicationService()->markAsSuitable($deliveryIndication->getLinkedSpaceId(),
+            $deliveryIndication->getId());
     }
 
     /**
@@ -49,10 +49,10 @@ class PostFinanceCheckout_Payment_Model_Service_DeliveryIndication extends PostF
     {
         $deliveryIndication = $this->getDeliveryIndicationForTransaction(
             $payment->getOrder()
-            ->getPostfinancecheckoutSpaceId(), $payment->getOrder()
-            ->getPostfinancecheckoutTransactionId()
-        );
-        return $this->getDeliveryIndicationService()->markAsNotSuitable($deliveryIndication->getLinkedSpaceId(), $deliveryIndication->getId());
+                ->getPostfinancecheckoutSpaceId(), $payment->getOrder()
+                ->getPostfinancecheckoutTransactionId());
+        return $this->getDeliveryIndicationService()->markAsNotSuitable($deliveryIndication->getLinkedSpaceId(),
+            $deliveryIndication->getId());
     }
 
     /**
@@ -62,11 +62,12 @@ class PostFinanceCheckout_Payment_Model_Service_DeliveryIndication extends PostF
      */
     protected function getDeliveryIndicationService()
     {
-        if ($this->deliveryIndicationService == null) {
-            $this->deliveryIndicationService = new \PostFinanceCheckout\Sdk\Service\DeliveryIndicationService($this->getHelper()->getApiClient());
+        if ($this->_deliveryIndicationService == null) {
+            $this->_deliveryIndicationService = new \PostFinanceCheckout\Sdk\Service\DeliveryIndicationService(
+                $this->getHelper()->getApiClient());
         }
 
-        return $this->deliveryIndicationService;
+        return $this->_deliveryIndicationService;
     }
 
     /**

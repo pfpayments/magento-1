@@ -44,7 +44,8 @@ class PostFinanceCheckout_Payment_Model_Provider_PaymentConnector extends PostFi
 
     protected function fetchData()
     {
-        $connectorService = new \PostFinanceCheckout\Sdk\Service\PaymentConnectorService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        $connectorService = new \PostFinanceCheckout\Sdk\Service\PaymentConnectorService(
+            Mage::helper('postfinancecheckout_payment')->getApiClient());
         return $connectorService->all();
     }
 

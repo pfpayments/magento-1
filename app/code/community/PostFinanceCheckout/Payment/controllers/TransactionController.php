@@ -11,11 +11,12 @@
  */
 
 /**
- * This controller redirects the customer to the relevant page in the shop after the payment process and allows customers to download transaction documents.
+ * This controller redirects the customer to the relevant page in the shop after the payment process and allows
+ * customers to download transaction documents.
  */
 class PostFinanceCheckout_Payment_TransactionController extends Mage_Core_Controller_Front_Action
 {
-    
+
     /**
      * This action is needed for some one step checkouts.
      */
@@ -48,13 +49,12 @@ class PostFinanceCheckout_Payment_TransactionController extends Mage_Core_Contro
 
         /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
         $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
-        $transactionService->waitForTransactionState(
-            $order, array(
-            \PostFinanceCheckout\Sdk\Model\TransactionState::CONFIRMED,
-            \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING,
-            \PostFinanceCheckout\Sdk\Model\TransactionState::PROCESSING
-            ), 3
-        );
+        $transactionService->waitForTransactionState($order,
+            array(
+                \PostFinanceCheckout\Sdk\Model\TransactionState::CONFIRMED,
+                \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING,
+                \PostFinanceCheckout\Sdk\Model\TransactionState::PROCESSING
+            ), 3);
 
         $this->_redirectUrl($this->getSuccessUrl($order));
     }
@@ -62,17 +62,13 @@ class PostFinanceCheckout_Payment_TransactionController extends Mage_Core_Contro
     protected function getSuccessUrl(Mage_Sales_Model_Order $order)
     {
         $result = new StdClass();
-        $result->url = Mage::getUrl(
-            'checkout/onepage/success', array(
+        $result->url = Mage::getUrl('checkout/onepage/success', array(
             '_secure' => true
-            )
-        );
-        Mage::dispatchEvent(
-            'postfinancecheckout_payment_success_url', array(
+        ));
+        Mage::dispatchEvent('postfinancecheckout_payment_success_url', array(
             'result' => $result,
             'order' => $order
-            )
-        );
+        ));
         return $result->url;
     }
 
@@ -88,13 +84,13 @@ class PostFinanceCheckout_Payment_TransactionController extends Mage_Core_Contro
             if (Mage::helper('postfinancecheckout_payment')->hash($orderId) != $this->getRequest()->getParam('secret')) {
                 Mage::throwException('Invalid secret.');
             }
-    
+
             /* @var Mage_Sales_Model_Order $order */
             $order = Mage::getModel('sales/order')->load($orderId);
             /* @var PostFinanceCheckout_Payment_Model_Payment_Method_Abstract $methodInstance */
             $methodInstance = $order->getPayment()->getMethodInstance();
             $methodInstance->fail($order);
-    
+
             $this->_redirectUrl($this->getFailureUrl($order));
         }
     }
@@ -103,12 +99,10 @@ class PostFinanceCheckout_Payment_TransactionController extends Mage_Core_Contro
     {
         $result = new StdClass();
         $result->url = Mage::getUrl('checkout/cart');
-        Mage::dispatchEvent(
-            'postfinancecheckout_payment_failure_url', array(
-                'result' => $result,
-                'order' => $order
-            )
-        );
+        Mage::dispatchEvent('postfinancecheckout_payment_failure_url', array(
+            'result' => $result,
+            'order' => $order
+        ));
         return $result->url;
     }
 
@@ -122,16 +116,19 @@ class PostFinanceCheckout_Payment_TransactionController extends Mage_Core_Contro
             return false;
         }
 
-        if (! Mage::getStoreConfigFlag('postfinancecheckout_payment/document/customer_download_invoice', $transactionInfo->getOrder()->getStore())) {
+        if (! Mage::getStoreConfigFlag('postfinancecheckout_payment/document/customer_download_invoice',
+            $transactionInfo->getOrder()->getStore())) {
             $this->_redirect('sales/order/view/order_id/' . $transactionInfo->getOrderId());
             return false;
         }
 
         try {
-            $service = new \PostFinanceCheckout\Sdk\Service\TransactionService(Mage::helper('postfinancecheckout_payment')->getApiClient());
-            $document = $service->getInvoiceDocument($transactionInfo->getSpaceId(), $transactionInfo->getTransactionId());
+            $service = new \PostFinanceCheckout\Sdk\Service\TransactionService(
+                Mage::helper('postfinancecheckout_payment')->getApiClient());
+            $document = $service->getInvoiceDocument($transactionInfo->getSpaceId(),
+                $transactionInfo->getTransactionId());
             $this->download($document);
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             /* @var Mage_Core_Model_Session $session */
             $session = Mage::getSingleton('core/session');
             $session->addError('The invoice document cannot be downloaded.');
@@ -150,16 +147,18 @@ class PostFinanceCheckout_Payment_TransactionController extends Mage_Core_Contro
             return false;
         }
 
-        if (! Mage::getStoreConfigFlag('postfinancecheckout_payment/document/customer_download_packing_slip', $transactionInfo->getOrder()->getStore())) {
+        if (! Mage::getStoreConfigFlag('postfinancecheckout_payment/document/customer_download_packing_slip',
+            $transactionInfo->getOrder()->getStore())) {
             $this->_redirect('sales/order/view/order_id/' . $transactionInfo->getOrderId());
             return false;
         }
 
         try {
-            $service = new \PostFinanceCheckout\Sdk\Service\TransactionService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+            $service = new \PostFinanceCheckout\Sdk\Service\TransactionService(
+                Mage::helper('postfinancecheckout_payment')->getApiClient());
             $document = $service->getPackingSlip($transactionInfo->getSpaceId(), $transactionInfo->getTransactionId());
             $this->download($document);
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             /* @var Mage_Core_Model_Session $session */
             $session = Mage::getSingleton('core/session');
             $session->addError('The packing slip cannot be downloaded.');
@@ -245,7 +244,8 @@ class PostFinanceCheckout_Payment_TransactionController extends Mage_Core_Contro
     {
         $customerId = Mage::getSingleton('customer/session')->getCustomerId();
         $availableStates = Mage::getSingleton('sales/order_config')->getVisibleOnFrontStates();
-        if ($order->getId() && $order->getCustomerId() && ($order->getCustomerId() == $customerId) && in_array($order->getState(), $availableStates)) {
+        if ($order->getId() && $order->getCustomerId() && ($order->getCustomerId() == $customerId) &&
+            in_array($order->getState(), $availableStates)) {
             return true;
         }
 

@@ -46,7 +46,7 @@ abstract class PostFinanceCheckout_Payment_Model_Webhook_AbstractOrderRelated ex
             throw $e;
         }
     }
-    
+
     /**
      * Starts a database transaction with isolation level 'read uncommitted'.
      *
@@ -99,25 +99,25 @@ abstract class PostFinanceCheckout_Payment_Model_Webhook_AbstractOrderRelated ex
     protected function getOrderId($entity)
     {
         /* @var PostFinanceCheckout_Payment_Model_Entity_TransactionInfo $transactionInfo */
-        $transactionInfo = Mage::getModel('postfinancecheckout_payment/entity_transactionInfo')->loadByTransaction($entity->getLinkedSpaceId(), $this->getTransactionId($entity));
+        $transactionInfo = Mage::getModel('postfinancecheckout_payment/entity_transactionInfo')->loadByTransaction(
+            $entity->getLinkedSpaceId(), $this->getTransactionId($entity));
         return $transactionInfo->getOrderId();
     }
-    
+
     /**
      * Create a lock to prevent concurrency.
      *
      * @param Mage_Sales_Model_Order $order
      */
-    private function lock(Mage_Sales_Model_Order $order)
+    protected function lock(Mage_Sales_Model_Order $order)
     {
         /* @var Mage_Core_Model_Resource $resource */
         $resource = Mage::getSingleton('core/resource');
-        $resource->getConnection('core_write')->update(
-            $resource->getTableName('sales/order'), array(
-                'postfinancecheckout_lock' => date("Y-m-d H:i:s")
+        $resource->getConnection('core_write')->update($resource->getTableName('sales/order'),
+            array(
+                'postfinancecheckout_lock' => Mage::getSingleton('core/date')->date()
             ), array(
                 'entity_id = ?' => $order->getId()
-            )
-        );
+            ));
     }
 }

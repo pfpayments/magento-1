@@ -44,7 +44,8 @@ class PostFinanceCheckout_Payment_Model_Provider_PaymentMethod extends PostFinan
 
     protected function fetchData()
     {
-        $methodService = new \PostFinanceCheckout\Sdk\Service\PaymentMethodService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        $methodService = new \PostFinanceCheckout\Sdk\Service\PaymentMethodService(
+            Mage::helper('postfinancecheckout_payment')->getApiClient());
         return $methodService->all();
     }
 

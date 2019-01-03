@@ -21,21 +21,21 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      *
      * @var \PostFinanceCheckout\Sdk\Model\Transaction[]
      */
-    private static $transactionCache = array();
+    protected static $_transactionCache = array();
 
     /**
      * Cache for possible payment methods by quote.
      *
      * @var \PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration[]
      */
-    private static $possiblePaymentMethodCache = array();
+    protected static $_possiblePaymentMethodCache = array();
 
     /**
      * The transaction API service.
      *
      * @var \PostFinanceCheckout\Sdk\Service\TransactionService
      */
-    private $transactionService;
+    protected $_transactionService;
 
     /**
      * Returns the transaction API service.
@@ -44,11 +44,12 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      */
     protected function getTransactionService()
     {
-        if ($this->transactionService == null) {
-            $this->transactionService = new \PostFinanceCheckout\Sdk\Service\TransactionService($this->getHelper()->getApiClient());
+        if ($this->_transactionService == null) {
+            $this->_transactionService = new \PostFinanceCheckout\Sdk\Service\TransactionService(
+                $this->getHelper()->getApiClient());
         }
 
-        return $this->transactionService;
+        return $this->_transactionService;
     }
 
     /**
@@ -87,9 +88,10 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
     public function getJavaScriptUrl(Mage_Sales_Model_Quote $quote)
     {
         $transaction = $this->getTransactionByQuote($quote);
-        return $this->getTransactionService()->buildJavaScriptUrl($transaction->getLinkedSpaceId(), $transaction->getId());
+        return $this->getTransactionService()->buildJavaScriptUrl($transaction->getLinkedSpaceId(),
+            $transaction->getId());
     }
-    
+
     /**
      * Returns the URL to PostFinance Checkout's payment page.
      *
@@ -99,7 +101,8 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
     public function getPaymentPageUrl(Mage_Sales_Model_Quote $quote)
     {
         $transaction = $this->getTransactionByQuote($quote);
-        return $this->getTransactionService()->buildPaymentPageUrl($transaction->getLinkedSpaceId(), $transaction->getId());
+        return $this->getTransactionService()->buildPaymentPageUrl($transaction->getLinkedSpaceId(),
+            $transaction->getId());
     }
 
     /**
@@ -123,22 +126,20 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      */
     public function getFailedChargeAttempt($spaceId, $transactionId)
     {
-        $chargeAttemptService = new \PostFinanceCheckout\Sdk\Service\ChargeAttemptService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        $chargeAttemptService = new \PostFinanceCheckout\Sdk\Service\ChargeAttemptService(
+            Mage::helper('postfinancecheckout_payment')->getApiClient());
         $query = new \PostFinanceCheckout\Sdk\Model\EntityQuery();
         $filter = new \PostFinanceCheckout\Sdk\Model\EntityQueryFilter();
         $filter->setType(\PostFinanceCheckout\Sdk\Model\EntityQueryFilterType::_AND);
         $filter->setChildren(
             array(
-            $this->createEntityFilter('charge.transaction.id', $transactionId),
-            $this->createEntityFilter('state', \PostFinanceCheckout\Sdk\Model\ChargeAttemptState::FAILED)
-            )
-        );
+                $this->createEntityFilter('charge.transaction.id', $transactionId),
+                $this->createEntityFilter('state', \PostFinanceCheckout\Sdk\Model\ChargeAttemptState::FAILED)
+            ));
         $query->setFilter($filter);
-        $query->setOrderBys(
-            array(
+        $query->setOrderBys(array(
             $this->createEntityOrderBy('failedOn')
-            )
-        );
+        ));
         $query->setNumberOfEntities(1);
         $result = $chargeAttemptService->search($spaceId, $query);
         if ($result != null && ! empty($result)) {
@@ -171,10 +172,12 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      * @param Mage_Sales_Model_Order $order
      * @return PostFinanceCheckout_Payment_Model_Entity_TransactionInfo
      */
-    public function updateTransactionInfo(\PostFinanceCheckout\Sdk\Model\Transaction $transaction, Mage_Sales_Model_Order $order)
+    public function updateTransactionInfo(\PostFinanceCheckout\Sdk\Model\Transaction $transaction,
+        Mage_Sales_Model_Order $order)
     {
         /* @var PostFinanceCheckout_Payment_Model_Entity_TransactionInfo $info */
-        $info = Mage::getModel('postfinancecheckout_payment/entity_transactionInfo')->loadByTransaction($transaction->getLinkedSpaceId(), $transaction->getId());
+        $info = Mage::getModel('postfinancecheckout_payment/entity_transactionInfo')->loadByTransaction(
+            $transaction->getLinkedSpaceId(), $transaction->getId());
         $info->setTransactionId($transaction->getId());
         $info->setAuthorizationAmount($transaction->getAuthorizationAmount());
         $info->setOrderId($order->getId());
@@ -185,18 +188,19 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
         $info->setCurrency($transaction->getCurrency());
         $info->setConnectorId(
             $transaction->getPaymentConnectorConfiguration() != null ? $transaction->getPaymentConnectorConfiguration()
-            ->getConnector() : null
-        );
+                ->getConnector() : null);
         $info->setPaymentMethodId(
             $transaction->getPaymentConnectorConfiguration() != null && $transaction->getPaymentConnectorConfiguration()
-            ->getPaymentMethodConfiguration() != null ? $transaction->getPaymentConnectorConfiguration()
-            ->getPaymentMethodConfiguration()
-            ->getPaymentMethod() : null
-        );
+                ->getPaymentMethodConfiguration() != null ? $transaction->getPaymentConnectorConfiguration()
+                ->getPaymentMethodConfiguration()
+                ->getPaymentMethod() : null);
         $info->setImage($this->getPaymentMethodImage($transaction, $order));
         $info->setLabels($this->getTransactionLabels($transaction));
-        if ($transaction->getState() == \PostFinanceCheckout\Sdk\Model\TransactionState::FAILED || $transaction->getState() == \PostFinanceCheckout\Sdk\Model\TransactionState::DECLINE) {
-            $info->setFailureReason($transaction->getFailureReason() instanceof \PostFinanceCheckout\Sdk\Model\FailureReason ? $transaction->getFailureReason()->getDescription() : null);
+        if ($transaction->getState() == \PostFinanceCheckout\Sdk\Model\TransactionState::FAILED ||
+            $transaction->getState() == \PostFinanceCheckout\Sdk\Model\TransactionState::DECLINE) {
+            $info->setFailureReason(
+                $transaction->getFailureReason() instanceof \PostFinanceCheckout\Sdk\Model\FailureReason ? $transaction->getFailureReason()
+                    ->getDescription() : null);
         }
 
         $info->save();
@@ -231,16 +235,16 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      */
     protected function getChargeAttempt(\PostFinanceCheckout\Sdk\Model\Transaction $transaction)
     {
-        $chargeAttemptService = new \PostFinanceCheckout\Sdk\Service\ChargeAttemptService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        $chargeAttemptService = new \PostFinanceCheckout\Sdk\Service\ChargeAttemptService(
+            Mage::helper('postfinancecheckout_payment')->getApiClient());
         $query = new \PostFinanceCheckout\Sdk\Model\EntityQuery();
         $filter = new \PostFinanceCheckout\Sdk\Model\EntityQueryFilter();
         $filter->setType(\PostFinanceCheckout\Sdk\Model\EntityQueryFilterType::_AND);
         $filter->setChildren(
             array(
-            $this->createEntityFilter('charge.transaction.id', $transaction->getId()),
-            $this->createEntityFilter('state', \PostFinanceCheckout\Sdk\Model\ChargeAttemptState::SUCCESSFUL)
-            )
-        );
+                $this->createEntityFilter('charge.transaction.id', $transaction->getId()),
+                $this->createEntityFilter('state', \PostFinanceCheckout\Sdk\Model\ChargeAttemptState::SUCCESSFUL)
+            ));
         $query->setFilter($filter);
         $query->setNumberOfEntities(1);
         $result = $chargeAttemptService->search($transaction->getLinkedSpaceId(), $query);
@@ -258,12 +262,15 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      * @param Mage_Sales_Model_Order $order
      * @return string
      */
-    protected function getPaymentMethodImage(\PostFinanceCheckout\Sdk\Model\Transaction $transaction, Mage_Sales_Model_Order $order)
+    protected function getPaymentMethodImage(\PostFinanceCheckout\Sdk\Model\Transaction $transaction,
+        Mage_Sales_Model_Order $order)
     {
-        if ($transaction->getPaymentConnectorConfiguration() != null && $transaction->getPaymentConnectorConfiguration()->getPaymentMethodConfiguration() != null) {
-            return $this->getImagePath($transaction->getPaymentConnectorConfiguration()
-                ->getPaymentMethodConfiguration()
-                ->getResolvedImageUrl());
+        if ($transaction->getPaymentConnectorConfiguration() != null &&
+            $transaction->getPaymentConnectorConfiguration()->getPaymentMethodConfiguration() != null) {
+            return $this->getImagePath(
+                $transaction->getPaymentConnectorConfiguration()
+                    ->getPaymentMethodConfiguration()
+                    ->getResolvedImageUrl());
         } else {
             return $order->getPayment()
                 ->getMethodInstance()
@@ -271,12 +278,14 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
                 ->getImage();
         }
     }
-    
+
     /**
+     *
      * @param string $resolvedImageUrl
      * @return string
      */
-    protected function getImagePath($resolvedImageUrl) {
+    protected function getImagePath($resolvedImageUrl)
+    {
         $index = strpos($resolvedImageUrl, 'resource/');
         return substr($resolvedImageUrl, $index + strlen('resource/'));
     }
@@ -289,26 +298,29 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      */
     public function getPossiblePaymentMethods(Mage_Sales_Model_Quote $quote)
     {
-        if (! isset(self::$possiblePaymentMethodCache[$quote->getId()]) || self::$possiblePaymentMethodCache[$quote->getId()] == null) {
+        if (! isset(self::$_possiblePaymentMethodCache[$quote->getId()]) ||
+            self::$_possiblePaymentMethodCache[$quote->getId()] == null) {
             $transaction = $this->getTransactionByQuote($quote);
-            
+
             try {
-                $paymentMethods = $this->getTransactionService()->fetchPossiblePaymentMethods($transaction->getLinkedSpaceId(), $transaction->getId());
+                $paymentMethods = $this->getTransactionService()->fetchPossiblePaymentMethods(
+                    $transaction->getLinkedSpaceId(), $transaction->getId());
             } catch (\WhitelabelMachineName\Sdk\ApiException $e) {
-                self::$possiblePaymentMethodCache[$quote->getId()] = array();
+                self::$_possiblePaymentMethodCache[$quote->getId()] = array();
                 throw $e;
             }
 
             /* @var PostFinanceCheckout_Payment_Model_Service_PaymentMethodConfiguration $paymentMethodConfigurationService */
-            $paymentMethodConfigurationService = Mage::getSingleton('postfinancecheckout_payment/service_paymentMethodConfiguration');
+            $paymentMethodConfigurationService = Mage::getSingleton(
+                'postfinancecheckout_payment/service_paymentMethodConfiguration');
             foreach ($paymentMethods as $paymentMethod) {
                 $paymentMethodConfigurationService->updateData($paymentMethod);
             }
 
-            self::$possiblePaymentMethodCache[$quote->getId()] = $paymentMethods;
+            self::$_possiblePaymentMethodCache[$quote->getId()] = $paymentMethods;
         }
 
-        return self::$possiblePaymentMethodCache[$quote->getId()];
+        return self::$_possiblePaymentMethodCache[$quote->getId()];
     }
 
     /**
@@ -321,18 +333,19 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      * @param bool $chargeFlow
      * @return \PostFinanceCheckout\Sdk\Model\Transaction
      */
-    public function confirmTransaction($transactionId, $spaceId, Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice, $chargeFlow = false, \PostFinanceCheckout\Sdk\Model\Token $token = null)
+    public function confirmTransaction($transactionId, $spaceId, Mage_Sales_Model_Order $order,
+        Mage_Sales_Model_Order_Invoice $invoice, $chargeFlow = false, \PostFinanceCheckout\Sdk\Model\Token $token = null)
     {
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 5; $i ++) {
             try {
                 $transaction = $this->getTransactionService()->read($spaceId, $transactionId);
                 $customerId = $transaction->getCustomerId();
-                if (!($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction)
-                    || $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING
-                    || (!empty($customerId) && $customerId != $order->getCustomerId())) {
+                if (! ($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction) ||
+                    $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING ||
+                    (! empty($customerId) && $customerId != $order->getCustomerId())) {
                     return $this->createTransactionByOrder($spaceId, $order, $invoice, $chargeFlow);
                 }
-                
+
                 $pendingTransaction = new \PostFinanceCheckout\Sdk\Model\TransactionPending();
                 $pendingTransaction->setId($transaction->getId());
                 $pendingTransaction->setVersion($transaction->getVersion());
@@ -340,10 +353,12 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
                 if ($token != null) {
                     $pendingTransaction->setToken($token->getId());
                 }
-                
+
                 return $this->getTransactionService()->confirm($spaceId, $pendingTransaction);
             } catch (\PostFinanceCheckout\Sdk\VersioningException $e) {
                 // Try to update the transaction again, if a versioning exception occurred.
+                Mage::log('A versioning exception occurred while updating a transaction: ' . $e->getMessage(), null,
+                    'postfinancecheckout.log');
             }
         }
 
@@ -358,7 +373,8 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      * @param Mage_Sales_Model_Order_Invoice $invoice
      * @return \PostFinanceCheckout\Sdk\Model\TransactionCreate
      */
-    protected function createTransactionByOrder($spaceId, Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice, $chargeFlow = false, \PostFinanceCheckout\Sdk\Model\Token $token = null)
+    protected function createTransactionByOrder($spaceId, Mage_Sales_Model_Order $order,
+        Mage_Sales_Model_Order_Invoice $invoice, $chargeFlow = false, \PostFinanceCheckout\Sdk\Model\Token $token = null)
     {
         $createTransaction = new \PostFinanceCheckout\Sdk\Model\TransactionCreate();
         $createTransaction->setCustomersPresence(\PostFinanceCheckout\Sdk\Model\CustomersPresence::VIRTUAL_PRESENT);
@@ -384,31 +400,31 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      * @param \PostFinanceCheckout\Sdk\Model\AbstractTransactionPending $transaction
      * @param bool $chargeFlow
      */
-    protected function assembleOrderTransactionData(Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice, \PostFinanceCheckout\Sdk\Model\AbstractTransactionPending $transaction, $chargeFlow = false)
+    protected function assembleOrderTransactionData(Mage_Sales_Model_Order $order,
+        Mage_Sales_Model_Order_Invoice $invoice, \PostFinanceCheckout\Sdk\Model\AbstractTransactionPending $transaction,
+        $chargeFlow = false)
     {
         $transaction->setCurrency($order->getOrderCurrencyCode());
         $transaction->setBillingAddress($this->getOrderBillingAddress($order));
         $transaction->setShippingAddress($this->getOrderShippingAddress($order));
-        $transaction->setCustomerEmailAddress($this->getCustomerEmailAddress($order->getCustomerEmail(), $order->getCustomerId()));
+        $transaction->setCustomerEmailAddress(
+            $this->getCustomerEmailAddress($order->getCustomerEmail(), $order->getCustomerId()));
         $customerId = $order->getCustomerId();
-        if (!empty($customerId)) {
+        if (! empty($customerId)) {
             $transaction->setCustomerId($customerId);
         }
-        $transaction->setLanguage(
-            $order->getStore()
-            ->getConfig('general/locale/code')
-        );
+        $transaction->setLanguage($order->getStore()
+            ->getConfig('general/locale/code'));
         if ($order->getShippingAddress()) {
             $transaction->setShippingMethod(
-                $this->fixLength($this->getFirstLine($order->getShippingAddress()->getShippingDescription()), 200)
-            );
+                $this->fixLength($this->getFirstLine($order->getShippingAddress()
+                    ->getShippingDescription()), 200));
         }
 
         if ($transaction instanceof \PostFinanceCheckout\Sdk\Model\TransactionCreate) {
             $transaction->setSpaceViewId(
                 $order->getStore()
-                ->getConfig('postfinancecheckout_payment/general/store_view_id')
-            );
+                    ->getConfig('postfinancecheckout_payment/general/store_view_id'));
         }
 
         /* @var PostFinanceCheckout_Payment_Model_Service_LineItem $lineItems */
@@ -419,33 +435,28 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
         if ($chargeFlow) {
             $transaction->setAllowedPaymentMethodConfigurations(
                 array(
-                $order->getPayment()
-                    ->getMethodInstance()
-                    ->getPaymentMethodConfiguration()
-                    ->getConfigurationId()
-                )
-            );
+                    $order->getPayment()
+                        ->getMethodInstance()
+                        ->getPaymentMethodConfiguration()
+                        ->getConfigurationId()
+                ));
         } else {
             $transaction->setSuccessUrl(
-                Mage::getUrl(
-                    'postfinancecheckout/transaction/success', array(
-                    '_secure' => true,
-                    'order_id' => $order->getId(),
-                    'secret' => $this->getHelper()
-                    ->hash($order->getId())
-                    )
-                )
-            );
+                Mage::getUrl('postfinancecheckout/transaction/success',
+                    array(
+                        '_secure' => true,
+                        'order_id' => $order->getId(),
+                        'secret' => $this->getHelper()
+                            ->hash($order->getId())
+                    )));
             $transaction->setFailedUrl(
-                Mage::getUrl(
-                    'postfinancecheckout/transaction/failure', array(
-                    '_secure' => true,
-                    'order_id' => $order->getId(),
-                    'secret' => $this->getHelper()
-                    ->hash($order->getId())
-                    )
-                )
-            );
+                Mage::getUrl('postfinancecheckout/transaction/failure',
+                    array(
+                        '_secure' => true,
+                        'order_id' => $order->getId(),
+                        'secret' => $this->getHelper()
+                            ->hash($order->getId())
+                    )));
         }
     }
 
@@ -495,17 +506,17 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      */
     public function getTransactionByQuote(Mage_Sales_Model_Quote $quote)
     {
-        if (! isset(self::$transactionCache[$quote->getId()]) || self::$transactionCache[$quote->getId()] == null) {
+        if (! isset(self::$_transactionCache[$quote->getId()]) || self::$_transactionCache[$quote->getId()] == null) {
             if ($quote->getPostfinancecheckoutTransactionId() == null) {
                 $transaction = $this->createTransactionByQuote($quote);
             } else {
                 $transaction = $this->loadAndUpdateTransaction($quote);
             }
 
-            self::$transactionCache[$quote->getId()] = $transaction;
+            self::$_transactionCache[$quote->getId()] = $transaction;
         }
 
-        return self::$transactionCache[$quote->getId()];
+        return self::$_transactionCache[$quote->getId()];
     }
 
     /**
@@ -538,23 +549,27 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      */
     protected function loadAndUpdateTransaction(Mage_Sales_Model_Quote $quote)
     {
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 5; $i ++) {
             try {
-                $transaction = $this->getTransactionService()->read($quote->getPostfinancecheckoutSpaceId(), $quote->getPostfinancecheckoutTransactionId());
+                $transaction = $this->getTransactionService()->read($quote->getPostfinancecheckoutSpaceId(),
+                    $quote->getPostfinancecheckoutTransactionId());
                 $customerId = $transaction->getCustomerId();
-                if (!($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction)
-                    || $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING
-                    || (!empty($customerId) && $customerId != $quote->getCustomerId())) {
+                if (! ($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction) ||
+                    $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING ||
+                    (! empty($customerId) && $customerId != $quote->getCustomerId())) {
                     return $this->createTransactionByQuote($quote);
                 }
-        
+
                 $pendingTransaction = new \PostFinanceCheckout\Sdk\Model\TransactionPending();
                 $pendingTransaction->setId($transaction->getId());
                 $pendingTransaction->setVersion($transaction->getVersion());
                 $this->assembleQuoteTransactionData($quote, $pendingTransaction);
-                return $this->getTransactionService()->update($quote->getPostfinancecheckoutSpaceId(), $pendingTransaction);
+                return $this->getTransactionService()->update($quote->getPostfinancecheckoutSpaceId(),
+                    $pendingTransaction);
             } catch (\PostFinanceCheckout\Sdk\VersioningException $e) {
                 // Try to update the transaction again, if a versioning exception occurred.
+                Mage::log('A versioning exception occurred while updating a transaction: ' . $e->getMessage(), null,
+                    'postfinancecheckout.log');
             }
         }
 
@@ -567,31 +582,30 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      * @param Mage_Sales_Model_Quote $quote
      * @param \PostFinanceCheckout\Sdk\Model\AbstractTransactionPending $transaction
      */
-    protected function assembleQuoteTransactionData(Mage_Sales_Model_Quote $quote, \PostFinanceCheckout\Sdk\Model\AbstractTransactionPending $transaction)
+    protected function assembleQuoteTransactionData(Mage_Sales_Model_Quote $quote,
+        \PostFinanceCheckout\Sdk\Model\AbstractTransactionPending $transaction)
     {
         $transaction->setCurrency($quote->getQuoteCurrencyCode());
         $transaction->setBillingAddress($this->getQuoteBillingAddress($quote));
         $transaction->setShippingAddress($this->getQuoteShippingAddress($quote));
-        $transaction->setCustomerEmailAddress($this->getCustomerEmailAddress($quote->getCustomerEmail(), $quote->getCustomerId()));
+        $transaction->setCustomerEmailAddress(
+            $this->getCustomerEmailAddress($quote->getCustomerEmail(), $quote->getCustomerId()));
         $customerId = $quote->getCustomerId();
-        if (!empty($customerId)) {
+        if (! empty($customerId)) {
             $transaction->setCustomerId($customerId);
         }
-        $transaction->setLanguage(
-            $quote->getStore()
-            ->getConfig('general/locale/code')
-        );
+        $transaction->setLanguage($quote->getStore()
+            ->getConfig('general/locale/code'));
         if ($quote->getShippingAddress()) {
             $transaction->setShippingMethod(
-                $this->fixLength($this->getFirstLine($quote->getShippingAddress()->getShippingDescription()), 200)
-            );
+                $this->fixLength($this->getFirstLine($quote->getShippingAddress()
+                    ->getShippingDescription()), 200));
         }
 
         if ($transaction instanceof \PostFinanceCheckout\Sdk\Model\TransactionCreate) {
             $transaction->setSpaceViewId(
                 $quote->getStore()
-                ->getConfig('postfinancecheckout_payment/general/store_view_id')
-            );
+                    ->getConfig('postfinancecheckout_payment/general/store_view_id'));
         }
 
         /* @var PostFinanceCheckout_Payment_Model_Service_LineItem $lineItems */
@@ -599,12 +613,9 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
         $transaction->setLineItems($lineItems->collectLineItems($quote));
         $transaction->setAllowedPaymentMethodConfigurations(array());
         $transaction->setFailedUrl(
-            Mage::getUrl(
-                'postfinancecheckout/transaction/failure', array(
-                    '_secure' => true
-                )
-            )
-        );
+            Mage::getUrl('postfinancecheckout/transaction/failure', array(
+                '_secure' => true
+            )));
     }
 
     /**

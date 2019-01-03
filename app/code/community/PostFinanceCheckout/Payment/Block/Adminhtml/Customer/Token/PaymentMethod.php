@@ -19,7 +19,8 @@ class PostFinanceCheckout_Payment_Block_Adminhtml_Customer_Token_PaymentMethod e
     public function _getValue(Varien_Object $row)
     {
         /* @var PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration $paymentMethod */
-        $paymentMethod = Mage::getModel('postfinancecheckout_payment/entity_paymentMethodConfiguration')->load($row->payment_method_id);
+        $paymentMethod = Mage::getModel('postfinancecheckout_payment/entity_paymentMethodConfiguration')->load(
+            $row->payment_method_id);
         return $paymentMethod->getConfigurationName();
     }
 }

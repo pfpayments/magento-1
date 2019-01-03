@@ -39,7 +39,7 @@ class PostFinanceCheckout_Payment_Block_Payment_Checkout extends Mage_Payment_Bl
             return false;
         }
     }
-    
+
     /**
      * Returns the URL to PostFinance Checkout's payment page.
      *

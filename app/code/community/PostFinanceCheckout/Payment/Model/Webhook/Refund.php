@@ -23,7 +23,8 @@ class PostFinanceCheckout_Payment_Model_Webhook_Refund extends PostFinanceChecko
      */
     protected function loadEntity(PostFinanceCheckout_Payment_Model_Webhook_Request $request)
     {
-        $refundService = new \PostFinanceCheckout\Sdk\Service\RefundService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        $refundService = new \PostFinanceCheckout\Sdk\Service\RefundService(
+            Mage::helper('postfinancecheckout_payment')->getApiClient());
         return $refundService->read($request->getSpaceId(), $request->getEntityId());
     }
 
@@ -38,7 +39,6 @@ class PostFinanceCheckout_Payment_Model_Webhook_Refund extends PostFinanceChecko
         /* @var \PostFinanceCheckout\Sdk\Model\Refund $refund */
         switch ($refund->getState()) {
             case \PostFinanceCheckout\Sdk\Model\RefundState::FAILED:
-                $this->failed($refund, $order);
                 $this->deleteRefundJob($refund);
                 break;
             case \PostFinanceCheckout\Sdk\Model\RefundState::SUCCESSFUL:
@@ -50,10 +50,6 @@ class PostFinanceCheckout_Payment_Model_Webhook_Refund extends PostFinanceChecko
         }
     }
 
-    protected function failed(\PostFinanceCheckout\Sdk\Model\Refund $refund, Mage_Sales_Model_Order $order)
-    {
-    }
-
     protected function refunded(\PostFinanceCheckout\Sdk\Model\Refund $refund, Mage_Sales_Model_Order $order)
     {
         if ($order->getPostfinancecheckoutCanceled()) {
@@ -61,7 +57,8 @@ class PostFinanceCheckout_Payment_Model_Webhook_Refund extends PostFinanceChecko
         }
 
         /* @var Mage_Sales_Model_Order_Creditmemo $existingCreditmemo */
-        $existingCreditmemo = Mage::getModel('sales/order_creditmemo')->load($refund->getExternalId(), 'postfinancecheckout_external_id');
+        $existingCreditmemo = Mage::getModel('sales/order_creditmemo')->load($refund->getExternalId(),
+            'postfinancecheckout_external_id');
         if ($existingCreditmemo->getId() > 0) {
             return;
         }

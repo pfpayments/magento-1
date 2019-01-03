@@ -52,19 +52,19 @@ class PostFinanceCheckout_Payment_Model_Entity_TokenInfo extends Mage_Core_Model
      *
      * @var Mage_Customer_Model_Customer
      */
-    private $_customer;
+    protected $_customer;
 
     /**
      *
      * @var PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration
      */
-    private $_paymentMethod;
+    protected $_paymentMethod;
 
     /**
      *
      * @var \PostFinanceCheckout\Sdk\Model\PaymentConnector
      */
-    private $_connector;
+    protected $_connector;
 
     /**
      * Initialize resource model
@@ -79,7 +79,7 @@ class PostFinanceCheckout_Payment_Model_Entity_TokenInfo extends Mage_Core_Model
         parent::_beforeSave();
 
         if ($this->isObjectNew()) {
-            $this->setCreatedAt(date("Y-m-d H:i:s"));
+            $this->setCreatedAt(Mage::getSingleton('core/date')->date());
         }
     }
 
@@ -118,7 +118,8 @@ class PostFinanceCheckout_Payment_Model_Entity_TokenInfo extends Mage_Core_Model
     public function getPaymentMethod()
     {
         if (! $this->_paymentMethod instanceof PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration) {
-            $this->_paymentMethod = Mage::getModel('postfinancecheckout_payment/entity_paymentMethodConfiguration')->load($this->getPaymentMethodId());
+            $this->_paymentMethod = Mage::getModel('postfinancecheckout_payment/entity_paymentMethodConfiguration')->load(
+                $this->getPaymentMethodId());
         }
 
         return $this->_paymentMethod;
@@ -132,7 +133,8 @@ class PostFinanceCheckout_Payment_Model_Entity_TokenInfo extends Mage_Core_Model
     public function getConnector()
     {
         if (! $this->_connector instanceof \PostFinanceCheckout\Sdk\Model\PaymentConnector) {
-            $this->_connector = Mage::getSingleton('postfinancecheckout_payment/provider_paymentConnector')->find($this->getConnectorId());
+            $this->_connector = Mage::getSingleton('postfinancecheckout_payment/provider_paymentConnector')->find(
+                $this->getConnectorId());
         }
 
         return $this->_connector;

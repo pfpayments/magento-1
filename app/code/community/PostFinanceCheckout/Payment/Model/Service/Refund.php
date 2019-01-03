@@ -21,7 +21,7 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
      *
      * @var \PostFinanceCheckout\Sdk\Service\RefundService
      */
-    private $refundService;
+    protected $_refundService;
 
     /**
      * Returns the refund by the given external id.
@@ -42,17 +42,17 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
             Mage::throwException('The refund could not be found.');
         }
     }
-    
-    public function createForPayment(Mage_Sales_Model_Order_Payment $payment) {
+
+    public function createForPayment(Mage_Sales_Model_Order_Payment $payment)
+    {
         /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
         $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
         $transaction = new \PostFinanceCheckout\Sdk\Model\Transaction();
-        $transaction->setId(
-            $payment->getOrder()
-            ->getPostfinancecheckoutTransactionId()
-            );
-        
-        $baseLineItems = $this->getBaseLineItems($payment->getOrder()->getPostfinancecheckoutSpaceId(), $transaction);
+        $transaction->setId($payment->getOrder()
+            ->getPostfinancecheckoutTransactionId());
+
+        $baseLineItems = $this->getBaseLineItems($payment->getOrder()
+            ->getPostfinancecheckoutSpaceId(), $transaction);
         $reductions = array();
         foreach ($baseLineItems as $lineItem) {
             $reduction = new \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate();
@@ -61,9 +61,10 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
             $reduction->setUnitPriceReduction(0);
             $reductions[] = $reduction;
         }
-        
+
         $refund = new \PostFinanceCheckout\Sdk\Model\RefundCreate();
-        $refund->setExternalId(uniqid($payment->getOrder()->getId() . '-'));
+        $refund->setExternalId(uniqid($payment->getOrder()
+            ->getId() . '-'));
         $refund->setReductions($reductions);
         $refund->setTransaction($transaction);
         $refund->setType(\PostFinanceCheckout\Sdk\Model\RefundType::MERCHANT_INITIATED_ONLINE);
@@ -82,10 +83,8 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
         /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
         $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
         $transaction = new \PostFinanceCheckout\Sdk\Model\Transaction();
-        $transaction->setId(
-            $payment->getOrder()
-            ->getPostfinancecheckoutTransactionId()
-        );
+        $transaction->setId($payment->getOrder()
+            ->getPostfinancecheckoutTransactionId());
 
         $reductions = $this->getProductReductions($creditmemo);
         $shippingReduction = $this->getShippingReduction($creditmemo);
@@ -106,20 +105,24 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
     /**
      * Returns the fixed line item reductions for the creditmemo.
      *
-     * If the amount of the given reductions does not match the creditmemo's grand total, the amount to refund is distributed equally to the line items.
+     * If the amount of the given reductions does not match the creditmemo's grand total, the amount to refund is
+     * distributed equally to the line items.
      *
      * @param Mage_Sales_Model_Order_Creditmemo $creditmemo
      * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
      * @param \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate[] $reductions
      * @return \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate[]
      */
-    protected function fixReductions(Mage_Sales_Model_Order_Creditmemo $creditmemo, \PostFinanceCheckout\Sdk\Model\Transaction $transaction, array $reductions)
+    protected function fixReductions(Mage_Sales_Model_Order_Creditmemo $creditmemo,
+        \PostFinanceCheckout\Sdk\Model\Transaction $transaction, array $reductions)
     {
-        $baseLineItems = $this->getBaseLineItems($creditmemo->getOrder()->getPostfinancecheckoutSpaceId(), $transaction);
+        $baseLineItems = $this->getBaseLineItems($creditmemo->getOrder()
+            ->getPostfinancecheckoutSpaceId(), $transaction);
 
         /* @var PostFinanceCheckout_Payment_Helper_LineItem $lineItemHelper */
         $lineItemHelper = Mage::helper('postfinancecheckout_payment/lineItem');
-        $reductionAmount = $lineItemHelper->getReductionAmount($baseLineItems, $reductions, $creditmemo->getOrderCurrencyCode());
+        $reductionAmount = $lineItemHelper->getReductionAmount($baseLineItems, $reductions,
+            $creditmemo->getOrderCurrencyCode());
 
         if ($reductionAmount != $creditmemo->getGrandTotal()) {
             $fixedReductions = array();
@@ -131,7 +134,9 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
                     $reduction = new \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate();
                     $reduction->setLineItemUniqueId($lineItem->getUniqueId());
                     $reduction->setQuantityReduction(0);
-                    $reduction->setUnitPriceReduction($this->roundAmount($lineItem->getAmountIncludingTax() * $rate / $lineItem->getQuantity(), $creditmemo->getOrderCurrencyCode()));
+                    $reduction->setUnitPriceReduction(
+                        $this->roundAmount($lineItem->getAmountIncludingTax() * $rate / $lineItem->getQuantity(),
+                            $creditmemo->getOrderCurrencyCode()));
                     $fixedReductions[] = $reduction;
                 }
             }
@@ -154,27 +159,25 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
         foreach ($creditmemo->getAllItems() as $item) {
             /* @var Mage_Sales_Model_Order_Creditmemo_Item $item */
             $orderItem = $item->getOrderItem();
-            if ($orderItem->getParentItemId() != null && $orderItem->getParentItem()->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
+            if ($orderItem->getParentItemId() != null &&
+                $orderItem->getParentItem()->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
                 continue;
             }
 
-            if ($orderItem->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE && $orderItem->getParentItemId() == null) {
+            if ($orderItem->getProductType() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE &&
+                $orderItem->getParentItemId() == null) {
                 continue;
             }
 
             $reduction = new \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate();
-            $reduction->setLineItemUniqueId(
-                $orderItem->getQuoteItemId()
-            );
+            $reduction->setLineItemUniqueId($orderItem->getQuoteItemId());
             $reduction->setQuantityReduction($item->getQty());
             $reduction->setUnitPriceReduction(0);
             $reductions[] = $reduction;
-            
+
             if ($orderItem->getDiscountAmount() != 0) {
                 $reduction = new \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate();
-                $reduction->setLineItemUniqueId(
-                    $orderItem->getQuoteItemId() . '-discount'
-                );
+                $reduction->setLineItemUniqueId($orderItem->getQuoteItemId() . '-discount');
                 $reduction->setQuantityReduction($item->getQty());
                 $reduction->setUnitPriceReduction(0);
                 $reductions[] = $reduction;
@@ -195,12 +198,15 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
         if ($creditmemo->getShippingAmount() > 0) {
             $reduction = new \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate();
             $reduction->setLineItemUniqueId('shipping');
-            if ($creditmemo->getShippingAmount() + $creditmemo->getShippingTaxAmount() == $creditmemo->getOrder()->getShippingInclTax()) {
+            if ($creditmemo->getShippingAmount() + $creditmemo->getShippingTaxAmount() ==
+                $creditmemo->getOrder()->getShippingInclTax()) {
                 $reduction->setQuantityReduction(1);
                 $reduction->setUnitPriceReduction(0);
             } else {
                 $reduction->setQuantityReduction(0);
-                $reduction->setUnitPriceReduction($this->roundAmount($creditmemo->getShippingAmount() + $creditmemo->getShippingTaxAmount(), $creditmemo->getOrderCurrencyCode()));
+                $reduction->setUnitPriceReduction(
+                    $this->roundAmount($creditmemo->getShippingAmount() + $creditmemo->getShippingTaxAmount(),
+                        $creditmemo->getOrderCurrencyCode()));
             }
 
             return $reduction;
@@ -227,7 +233,8 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
      * @param \PostFinanceCheckout\Sdk\Model\Refund $refund
      * @param Mage_Sales_Model_Order $order
      */
-    public function registerRefundNotification(\PostFinanceCheckout\Sdk\Model\Refund $refund, Mage_Sales_Model_Order $order)
+    public function registerRefundNotification(\PostFinanceCheckout\Sdk\Model\Refund $refund,
+        Mage_Sales_Model_Order $order)
     {
         /* @var Mage_Sales_Model_Service_Order $serviceModel */
         $serviceModel = Mage::getModel('sales/service_order', $order);
@@ -240,14 +247,15 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
         $creditmemo->setPostfinancecheckoutExternalId($refund->getExternalId());
         $creditmemo->save();
 
-        $this->updateTotals(
-            $order->getPayment(), array(
-            'amount_refunded' => $creditmemo->getGrandTotal(),
-            'base_amount_refunded_online' => $refund->getAmount()
-            )
-        );
+        $this->updateTotals($order->getPayment(),
+            array(
+                'amount_refunded' => $creditmemo->getGrandTotal(),
+                'base_amount_refunded_online' => $refund->getAmount()
+            ));
 
-        $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING, true, Mage::helper('sales')->__('Registered notification about refunded amount of %s.', $this->formatPrice($order, $refund->getAmount())));
+        $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING, true,
+            Mage::helper('sales')->__('Registered notification about refunded amount of %s.',
+                $this->formatPrice($order, $refund->getAmount())));
         $order->save();
     }
 
@@ -289,9 +297,11 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
                 case \PostFinanceCheckout\Sdk\Model\LineItemType::PRODUCT:
                     if ($reduction->getQuantityReduction() > 0) {
                         $refundQuantities[$orderItemMap[$reduction->getLineItemUniqueId()]->getId()] = $reduction->getQuantityReduction();
-                        $creditmemoAmount += $reduction->getQuantityReduction() * $orderItemMap[$reduction->getLineItemUniqueId()]->getPriceInclTax();
-                        
-                        $discount = $this->findProductDiscount($refund->getTransaction()->getLineItems(), $reduction->getLineItemUniqueId());
+                        $creditmemoAmount += $reduction->getQuantityReduction() *
+                            $orderItemMap[$reduction->getLineItemUniqueId()]->getPriceInclTax();
+
+                        $discount = $this->findProductDiscount($refund->getTransaction()
+                            ->getLineItems(), $reduction->getLineItemUniqueId());
                         if ($discount != null) {
                             $creditmemoAmount += $discount->getAmountIncludingTax();
                         }
@@ -333,13 +343,14 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
             'adjustment_negative' => $negativeAdjustment
         );
     }
-    
+
     /**
-     * 
+     *
      * @param \PostFinanceCheckout\Sdk\Model\LineItem[] $lineItems
      * @param string $productId
      */
-    protected function findProductDiscount(array $lineItems, $productId) {
+    protected function findProductDiscount(array $lineItems, $productId)
+    {
         foreach ($lineItems as $lineItem) {
             if ($lineItem->getUniqueId() == $productId . '-discount') {
                 return $lineItem;
@@ -386,7 +397,8 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
      * @param \PostFinanceCheckout\Sdk\Model\Refund $refund
      * @return \PostFinanceCheckout\Sdk\Model\LineItem[]
      */
-    protected function getBaseLineItems($spaceId, \PostFinanceCheckout\Sdk\Model\Transaction $transaction, \PostFinanceCheckout\Sdk\Model\Refund $refund = null)
+    protected function getBaseLineItems($spaceId, \PostFinanceCheckout\Sdk\Model\Transaction $transaction,
+        \PostFinanceCheckout\Sdk\Model\Refund $refund = null)
     {
         $lastSuccessfulRefund = $this->getLastSuccessfulRefund($spaceId, $transaction, $refund);
         if ($lastSuccessfulRefund) {
@@ -412,20 +424,21 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
         $filter->setType(\PostFinanceCheckout\Sdk\Model\EntityQueryFilterType::_AND);
         $filter->setChildren(
             array(
-            $this->createEntityFilter('state', \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::CANCELED, \PostFinanceCheckout\Sdk\Model\CriteriaOperator::NOT_EQUALS),
-            $this->createEntityFilter('completion.lineItemVersion.transaction.id', $transaction->getId())
-            )
-        );
+                $this->createEntityFilter('state', \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::CANCELED,
+                    \PostFinanceCheckout\Sdk\Model\CriteriaOperator::NOT_EQUALS),
+                $this->createEntityFilter('completion.lineItemVersion.transaction.id', $transaction->getId())
+            ));
         $query->setFilter($filter);
 
         $query->setNumberOfEntities(1);
 
-        $invoiceService = new \PostFinanceCheckout\Sdk\Service\TransactionInvoiceService($this->getHelper()->getApiClient());
+        $invoiceService = new \PostFinanceCheckout\Sdk\Service\TransactionInvoiceService(
+            $this->getHelper()->getApiClient());
         $result = $invoiceService->search($spaceId, $query);
         if (! empty($result)) {
             return $result[0];
         } else {
-            throw new Exception('The transaction invoice could not be found.');
+            Mage::throwException('The transaction invoice could not be found.');
         }
     }
 
@@ -437,7 +450,8 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
      * @param \PostFinanceCheckout\Sdk\Model\Refund $refund
      * @return \PostFinanceCheckout\Sdk\Model\Refund
      */
-    protected function getLastSuccessfulRefund($spaceId, \PostFinanceCheckout\Sdk\Model\Transaction $transaction, \PostFinanceCheckout\Sdk\Model\Refund $refund = null)
+    protected function getLastSuccessfulRefund($spaceId, \PostFinanceCheckout\Sdk\Model\Transaction $transaction,
+        \PostFinanceCheckout\Sdk\Model\Refund $refund = null)
     {
         $query = new \PostFinanceCheckout\Sdk\Model\EntityQuery();
 
@@ -448,7 +462,8 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
             $this->createEntityFilter('transaction.id', $transaction->getId())
         );
         if ($refund != null) {
-            $filters[] = $this->createEntityFilter('id', $refund->getId(), \PostFinanceCheckout\Sdk\Model\CriteriaOperator::NOT_EQUALS);
+            $filters[] = $this->createEntityFilter('id', $refund->getId(),
+                \PostFinanceCheckout\Sdk\Model\CriteriaOperator::NOT_EQUALS);
         }
 
         $filter->setChildren($filters);
@@ -456,9 +471,8 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
 
         $query->setOrderBys(
             array(
-            $this->createEntityOrderBy('createdOn', \PostFinanceCheckout\Sdk\Model\EntityQueryOrderByType::DESC)
-            )
-        );
+                $this->createEntityOrderBy('createdOn', \PostFinanceCheckout\Sdk\Model\EntityQueryOrderByType::DESC)
+            ));
 
         $query->setNumberOfEntities(1);
 
@@ -477,10 +491,11 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
      */
     protected function getRefundService()
     {
-        if ($this->refundService == null) {
-            $this->refundService = new \PostFinanceCheckout\Sdk\Service\RefundService($this->getHelper()->getApiClient());
+        if ($this->_refundService == null) {
+            $this->_refundService = new \PostFinanceCheckout\Sdk\Service\RefundService(
+                $this->getHelper()->getApiClient());
         }
 
-        return $this->refundService;
+        return $this->_refundService;
     }
 }

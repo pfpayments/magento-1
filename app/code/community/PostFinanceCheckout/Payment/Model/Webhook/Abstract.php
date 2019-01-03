@@ -32,5 +32,4 @@ abstract class PostFinanceCheckout_Payment_Model_Webhook_Abstract
      * @param PostFinanceCheckout_Payment_Model_Webhook_Request $request
      */
     abstract protected function process(PostFinanceCheckout_Payment_Model_Webhook_Request $request);
-
 }

@@ -24,7 +24,8 @@ class PostFinanceCheckout_Payment_Model_Webhook_PaymentMethodConfiguration exten
     protected function process(PostFinanceCheckout_Payment_Model_Webhook_Request $request)
     {
         /* @var PostFinanceCheckout_Payment_Model_Service_PaymentMethodConfiguration $paymentMethodConfigurationService */
-        $paymentMethodConfigurationService = Mage::getSingleton('postfinancecheckout_payment/service_paymentMethodConfiguration');
+        $paymentMethodConfigurationService = Mage::getSingleton(
+            'postfinancecheckout_payment/service_paymentMethodConfiguration');
         $paymentMethodConfigurationService->synchronize();
     }
 }

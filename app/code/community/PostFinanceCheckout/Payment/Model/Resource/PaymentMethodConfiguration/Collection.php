@@ -40,7 +40,8 @@ class PostFinanceCheckout_Payment_Model_Resource_PaymentMethodConfiguration_Coll
      */
     public function addActiveStateFilter()
     {
-        $this->addFieldToFilter('main_table.state', PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration::STATE_ACTIVE);
+        $this->addFieldToFilter('main_table.state',
+            PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration::STATE_ACTIVE);
         return $this;
     }
 
@@ -51,14 +52,13 @@ class PostFinanceCheckout_Payment_Model_Resource_PaymentMethodConfiguration_Coll
      */
     public function addStateFilter()
     {
-        $this->addFieldToFilter(
-            'main_table.state', array(
-            'in' => array(
-                PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration::STATE_ACTIVE,
-                PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration::STATE_INACTIVE
-            )
-            )
-        );
+        $this->addFieldToFilter('main_table.state',
+            array(
+                'in' => array(
+                    PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration::STATE_ACTIVE,
+                    PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration::STATE_INACTIVE
+                )
+            ));
         return $this;
     }
 }

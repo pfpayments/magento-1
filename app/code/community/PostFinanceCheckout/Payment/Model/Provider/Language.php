@@ -62,7 +62,8 @@ class PostFinanceCheckout_Payment_Model_Provider_Language extends PostFinanceChe
 
     protected function fetchData()
     {
-        $languageService = new \PostFinanceCheckout\Sdk\Service\LanguageService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        $languageService = new \PostFinanceCheckout\Sdk\Service\LanguageService(
+            Mage::helper('postfinancecheckout_payment')->getApiClient());
         return $languageService->all();
     }
 

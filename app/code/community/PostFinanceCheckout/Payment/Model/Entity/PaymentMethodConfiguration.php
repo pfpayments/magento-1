@@ -22,7 +22,8 @@
  * @method int getConfigurationId()
  * @method PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration setConfigurationId(int configurationId)
  * @method string getConfigurationName()
- * @method PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration setConfigurationName(string configurationName)
+ * @method PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration setConfigurationName(string
+ *         configurationName)
  * @method PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration setTitle(array title)
  * @method PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration setDescription(array description)
  * @method string getImage()
@@ -68,10 +69,10 @@ class PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration extend
         parent::_beforeSave();
 
         if ($this->isObjectNew()) {
-            $this->setCreatedAt(date("Y-m-d H:i:s"));
+            $this->setCreatedAt(Mage::getSingleton('core/date')->date());
         }
 
-        $this->setUpdatedAt(date("Y-m-d H:i:s"));
+        $this->setUpdatedAt(Mage::getSingleton('core/date')->date());
     }
 
     /**

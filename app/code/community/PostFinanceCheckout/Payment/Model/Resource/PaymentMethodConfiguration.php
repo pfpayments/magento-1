@@ -48,18 +48,17 @@ class PostFinanceCheckout_Payment_Model_Resource_PaymentMethodConfiguration exte
      * @param int $configurationId
      * @return array
      */
-    public function loadByConfigurationId(PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration $model, $spaceId, $configurationId)
+    public function loadByConfigurationId(PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration $model,
+        $spaceId, $configurationId)
     {
         $select = $this->_read->select()
             ->from($this->getMainTable())
             ->where('space_id=:space_id AND configuration_id=:configuration_id');
 
-        $data = $this->_read->fetchRow(
-            $select, array(
+        $data = $this->_read->fetchRow($select, array(
             'space_id' => $spaceId,
             'configuration_id' => $configurationId
-            )
-        );
+        ));
 
         $model->setData($data);
         $this->unserializeFields($model);

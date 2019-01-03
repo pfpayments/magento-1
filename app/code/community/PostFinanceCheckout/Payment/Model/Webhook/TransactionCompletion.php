@@ -23,7 +23,8 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionCompletion extends Po
      */
     protected function loadEntity(PostFinanceCheckout_Payment_Model_Webhook_Request $request)
     {
-        $completionService = new \PostFinanceCheckout\Sdk\Service\TransactionCompletionService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        $completionService = new \PostFinanceCheckout\Sdk\Service\TransactionCompletionService(
+            Mage::helper('postfinancecheckout_payment')->getApiClient());
         return $completionService->read($request->getSpaceId(), $request->getEntityId());
     }
 
@@ -38,10 +39,8 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionCompletion extends Po
         /* @var \PostFinanceCheckout\Sdk\Model\TransactionCompletion $completion */
         switch ($completion->getState()) {
             case \PostFinanceCheckout\Sdk\Model\TransactionCompletionState::FAILED:
-                $this->failed(
-                    $completion->getLineItemVersion()
-                    ->getTransaction(), $order
-                );
+                $this->failed($completion->getLineItemVersion()
+                    ->getTransaction(), $order);
                 break;
             default:
                 // Nothing to do.
@@ -52,7 +51,8 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionCompletion extends Po
     protected function failed(\PostFinanceCheckout\Sdk\Model\Transaction $transaction, Mage_Sales_Model_Order $order)
     {
         $invoice = $this->getInvoiceForTransaction($transaction->getLinkedSpaceId(), $transaction->getId(), $order);
-        if ($invoice && $invoice->getPostfinancecheckoutCapturePending() && $invoice->getState() == Mage_Sales_Model_Order_Invoice::STATE_OPEN) {
+        if ($invoice && $invoice->getPostfinancecheckoutCapturePending() &&
+            $invoice->getState() == Mage_Sales_Model_Order_Invoice::STATE_OPEN) {
             $invoice->setPostfinancecheckoutCapturePending(false);
 
             $authTransaction = $order->getPayment()->getAuthorizationTransaction();
@@ -75,7 +75,8 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionCompletion extends Po
     protected function getInvoiceForTransaction($spaceId, $transactionId, Mage_Sales_Model_Order $order)
     {
         foreach ($order->getInvoiceCollection() as $invoice) {
-            if (strpos($invoice->getTransactionId(), $spaceId . '_' . $transactionId) === 0 && $invoice->getState() != Mage_Sales_Model_Order_Invoice::STATE_CANCELED) {
+            if (strpos($invoice->getTransactionId(), $spaceId . '_' . $transactionId) === 0 &&
+                $invoice->getState() != Mage_Sales_Model_Order_Invoice::STATE_CANCELED) {
                 $invoice->load($invoice->getId());
                 return $invoice;
             }

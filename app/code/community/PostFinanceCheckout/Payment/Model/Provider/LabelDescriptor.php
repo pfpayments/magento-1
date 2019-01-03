@@ -44,7 +44,8 @@ class PostFinanceCheckout_Payment_Model_Provider_LabelDescriptor extends PostFin
 
     protected function fetchData()
     {
-        $labelDescriptorService = new \PostFinanceCheckout\Sdk\Service\LabelDescriptionService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        $labelDescriptorService = new \PostFinanceCheckout\Sdk\Service\LabelDescriptionService(
+            Mage::helper('postfinancecheckout_payment')->getApiClient());
         return $labelDescriptorService->all();
     }
 

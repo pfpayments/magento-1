@@ -21,7 +21,7 @@ class PostFinanceCheckout_Payment_Model_Service_Void extends PostFinanceCheckout
      *
      * @var \PostFinanceCheckout\Sdk\Service\TransactionVoidService
      */
-    private $transactionVoidService;
+    protected $_transactionVoidService;
 
     /**
      * Void the transaction of the given payment.
@@ -33,9 +33,8 @@ class PostFinanceCheckout_Payment_Model_Service_Void extends PostFinanceCheckout
     {
         return $this->getTransactionVoidService()->voidOnline(
             $payment->getOrder()
-            ->getPostfinancecheckoutSpaceId(), $payment->getOrder()
-            ->getPostfinancecheckoutTransactionId()
-        );
+                ->getPostfinancecheckoutSpaceId(), $payment->getOrder()
+                ->getPostfinancecheckoutTransactionId());
     }
 
     /**
@@ -45,10 +44,11 @@ class PostFinanceCheckout_Payment_Model_Service_Void extends PostFinanceCheckout
      */
     protected function getTransactionVoidService()
     {
-        if ($this->transactionVoidService == null) {
-            $this->transactionVoidService = new \PostFinanceCheckout\Sdk\Service\TransactionVoidService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        if ($this->_transactionVoidService == null) {
+            $this->_transactionVoidService = new \PostFinanceCheckout\Sdk\Service\TransactionVoidService(
+                Mage::helper('postfinancecheckout_payment')->getApiClient());
         }
 
-        return $this->transactionVoidService;
+        return $this->_transactionVoidService;
     }
 }

@@ -21,7 +21,7 @@ class PostFinanceCheckout_Payment_Model_Service_ChargeFlow extends PostFinanceCh
      *
      * @var \PostFinanceCheckout\Sdk\Service\ChargeFlowService
      */
-    private $chargeFlowService;
+    protected $_chargeFlowService;
 
     /**
      * Apply a charge flow to the given transaction.
@@ -40,10 +40,11 @@ class PostFinanceCheckout_Payment_Model_Service_ChargeFlow extends PostFinanceCh
      */
     protected function getChargeFlowService()
     {
-        if ($this->chargeFlowService == null) {
-            $this->chargeFlowService = new \PostFinanceCheckout\Sdk\Service\ChargeFlowService($this->getHelper()->getApiClient());
+        if ($this->_chargeFlowService == null) {
+            $this->_chargeFlowService = new \PostFinanceCheckout\Sdk\Service\ChargeFlowService(
+                $this->getHelper()->getApiClient());
         }
 
-        return $this->chargeFlowService;
+        return $this->_chargeFlowService;
     }
 }

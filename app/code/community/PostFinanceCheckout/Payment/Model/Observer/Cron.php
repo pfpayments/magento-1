@@ -42,5 +42,4 @@ class PostFinanceCheckout_Payment_Model_Observer_Cron
             }
         }
     }
-    
 }

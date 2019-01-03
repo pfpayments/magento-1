@@ -20,29 +20,28 @@ class PostFinanceCheckout_Payment_PostFinanceCheckout_TransactionController exte
     {
         return Mage::getSingleton('admin/session')->isAllowed('sales/order');
     }
-    
+
     /**
      * Update the transaction info from the gateway.
      */
-    public function updateAction(){
+    public function updateAction()
+    {
         $service = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
-        
+
         $spaceId = $this->getRequest()->getParam('space_id');
         $transactionId = $this->getRequest()->getParam('transaction_id');
         $transaction = $service->getTransaction($spaceId, $transactionId);
-        
+
         $order = Mage::getModel('sales/order')->loadByIncrementId($transaction->getMerchantReference());
-        
+
         $service->updateTransactionInfo($transaction, $order);
-        
+
         $session = Mage::getSingleton('core/session');
         $session->addSuccess('The transaction has been updated.');
-        
-        $this->_redirect(
-            'adminhtml/sales_order/view', array(
-                'order_id' => $order->getId()
-            )
-        );
+
+        $this->_redirect('adminhtml/sales_order/view', array(
+            'order_id' => $order->getId()
+        ));
     }
 
     /**
@@ -68,11 +67,11 @@ class PostFinanceCheckout_Payment_PostFinanceCheckout_TransactionController exte
                     $session->addError(
                         Mage::helper('postfinancecheckout_payment')->translate(
                             $refund->getFailureReason()
-                            ->getDescription()
-                        )
-                    );
+                                ->getDescription()));
                 } elseif ($refund->getState() == \PostFinanceCheckout\Sdk\Model\RefundState::PENDING) {
-                    $session->addNotice(Mage::helper('postfinancecheckout_payment')->__('The refund was requested successfully, but is still pending on the gateway.'));
+                    $session->addNotice(
+                        Mage::helper('postfinancecheckout_payment')->__(
+                            'The refund was requested successfully, but is still pending on the gateway.'));
                 } else {
                     $session->addSuccess('Successfully refunded.');
                 }
@@ -83,11 +82,9 @@ class PostFinanceCheckout_Payment_PostFinanceCheckout_TransactionController exte
             $session->addError('For this order no refund request exists.');
         }
 
-        $this->_redirect(
-            'adminhtml/sales_order/view', array(
+        $this->_redirect('adminhtml/sales_order/view', array(
             'order_id' => $orderId
-            )
-        );
+        ));
     }
 
     /**
@@ -98,7 +95,8 @@ class PostFinanceCheckout_Payment_PostFinanceCheckout_TransactionController exte
         $spaceId = $this->getRequest()->getParam('space_id');
         $transactionId = $this->getRequest()->getParam('transaction_id');
 
-        $service = new \PostFinanceCheckout\Sdk\Service\TransactionService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        $service = new \PostFinanceCheckout\Sdk\Service\TransactionService(
+            Mage::helper('postfinancecheckout_payment')->getApiClient());
         $document = $service->getInvoiceDocument($spaceId, $transactionId);
         $this->download($document);
     }
@@ -111,7 +109,8 @@ class PostFinanceCheckout_Payment_PostFinanceCheckout_TransactionController exte
         $spaceId = $this->getRequest()->getParam('space_id');
         $transactionId = $this->getRequest()->getParam('transaction_id');
 
-        $service = new \PostFinanceCheckout\Sdk\Service\TransactionService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        $service = new \PostFinanceCheckout\Sdk\Service\TransactionService(
+            Mage::helper('postfinancecheckout_payment')->getApiClient());
         $document = $service->getPackingSlip($spaceId, $transactionId);
         $this->download($document);
     }
@@ -128,7 +127,8 @@ class PostFinanceCheckout_Payment_PostFinanceCheckout_TransactionController exte
         $refundService = Mage::getSingleton('postfinancecheckout_payment/service_refund');
         $refund = $refundService->getRefundByExternalId($spaceId, $externalId);
 
-        $service = new \PostFinanceCheckout\Sdk\Service\RefundService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        $service = new \PostFinanceCheckout\Sdk\Service\RefundService(
+            Mage::helper('postfinancecheckout_payment')->getApiClient());
         $document = $service->getRefundDocument($spaceId, $refund->getId());
         $this->download($document);
     }

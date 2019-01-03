@@ -21,86 +21,80 @@ class PostFinanceCheckout_Payment_Model_Service_Webhook extends PostFinanceCheck
      *
      * @var \PostFinanceCheckout\Sdk\Service\WebhookListenerService
      */
-    private $webhookListenerService;
+    protected $_webhookListenerService;
 
     /**
      * The webhook url API service.
      *
      * @var \PostFinanceCheckout\Sdk\Service\WebhookUrlService
      */
-    private $webhookUrlService;
+    protected $_webhookUrlService;
 
-    private $webhookEntities = array();
+    protected $_webhookEntities = array();
 
     /**
      * Constructor to register the webhook entites.
      */
     public function __construct()
     {
-        $this->webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(
-            1487165678181, 'Manual Task', array(
-            \PostFinanceCheckout\Sdk\Model\ManualTaskState::DONE,
-            \PostFinanceCheckout\Sdk\Model\ManualTaskState::EXPIRED,
-            \PostFinanceCheckout\Sdk\Model\ManualTaskState::OPEN
-            )
-        );
-        $this->webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(
-            1472041857405, 'Payment Method Configuration', array(
-            \PostFinanceCheckout\Sdk\Model\CreationEntityState::ACTIVE,
-            \PostFinanceCheckout\Sdk\Model\CreationEntityState::DELETED,
-            \PostFinanceCheckout\Sdk\Model\CreationEntityState::DELETING,
-            \PostFinanceCheckout\Sdk\Model\CreationEntityState::INACTIVE
-            ), true
-        );
-        $this->webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(
-            1472041829003, 'Transaction', array(
-            \PostFinanceCheckout\Sdk\Model\TransactionState::AUTHORIZED,
-            \PostFinanceCheckout\Sdk\Model\TransactionState::DECLINE,
-            \PostFinanceCheckout\Sdk\Model\TransactionState::FAILED,
-            \PostFinanceCheckout\Sdk\Model\TransactionState::FULFILL,
-            \PostFinanceCheckout\Sdk\Model\TransactionState::VOIDED,
-            \PostFinanceCheckout\Sdk\Model\TransactionState::COMPLETED,
-            \PostFinanceCheckout\Sdk\Model\TransactionState::PROCESSING,
-            \PostFinanceCheckout\Sdk\Model\TransactionState::CONFIRMED
-            )
-        );
-        $this->webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(
-            1472041819799, 'Delivery Indication', array(
-            \PostFinanceCheckout\Sdk\Model\DeliveryIndicationState::MANUAL_CHECK_REQUIRED
-            )
-        );
-        $this->webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(
-            1472041816898, 'Transaction Invoice', array(
-            \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::NOT_APPLICABLE,
-            \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::PAID,
-            \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::DERECOGNIZED
-            )
-        );
-        $this->webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(
-            1472041831364, 'Transaction Completion', array(
-            \PostFinanceCheckout\Sdk\Model\TransactionCompletionState::FAILED
-            )
-        );
-        $this->webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(
-            1472041839405, 'Refund', array(
-            \PostFinanceCheckout\Sdk\Model\RefundState::FAILED,
-            \PostFinanceCheckout\Sdk\Model\RefundState::SUCCESSFUL
-            )
-        );
-        $this->webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(
-            1472041806455, 'Token', array(
-            \PostFinanceCheckout\Sdk\Model\CreationEntityState::ACTIVE,
-            \PostFinanceCheckout\Sdk\Model\CreationEntityState::DELETED,
-            \PostFinanceCheckout\Sdk\Model\CreationEntityState::DELETING,
-            \PostFinanceCheckout\Sdk\Model\CreationEntityState::INACTIVE
-            )
-        );
-        $this->webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(
-            1472041811051, 'Token Version', array(
-            \PostFinanceCheckout\Sdk\Model\TokenVersionState::ACTIVE,
-            \PostFinanceCheckout\Sdk\Model\TokenVersionState::OBSOLETE
-            )
-        );
+        $this->_webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(1487165678181, 'Manual Task',
+            array(
+                \PostFinanceCheckout\Sdk\Model\ManualTaskState::DONE,
+                \PostFinanceCheckout\Sdk\Model\ManualTaskState::EXPIRED,
+                \PostFinanceCheckout\Sdk\Model\ManualTaskState::OPEN
+            ));
+        $this->_webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(1472041857405,
+            'Payment Method Configuration',
+            array(
+                \PostFinanceCheckout\Sdk\Model\CreationEntityState::ACTIVE,
+                \PostFinanceCheckout\Sdk\Model\CreationEntityState::DELETED,
+                \PostFinanceCheckout\Sdk\Model\CreationEntityState::DELETING,
+                \PostFinanceCheckout\Sdk\Model\CreationEntityState::INACTIVE
+            ), true);
+        $this->_webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(1472041829003, 'Transaction',
+            array(
+                \PostFinanceCheckout\Sdk\Model\TransactionState::AUTHORIZED,
+                \PostFinanceCheckout\Sdk\Model\TransactionState::DECLINE,
+                \PostFinanceCheckout\Sdk\Model\TransactionState::FAILED,
+                \PostFinanceCheckout\Sdk\Model\TransactionState::FULFILL,
+                \PostFinanceCheckout\Sdk\Model\TransactionState::VOIDED,
+                \PostFinanceCheckout\Sdk\Model\TransactionState::COMPLETED,
+                \PostFinanceCheckout\Sdk\Model\TransactionState::PROCESSING,
+                \PostFinanceCheckout\Sdk\Model\TransactionState::CONFIRMED
+            ));
+        $this->_webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(1472041819799,
+            'Delivery Indication',
+            array(
+                \PostFinanceCheckout\Sdk\Model\DeliveryIndicationState::MANUAL_CHECK_REQUIRED
+            ));
+        $this->_webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(1472041816898,
+            'Transaction Invoice',
+            array(
+                \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::NOT_APPLICABLE,
+                \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::PAID,
+                \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::DERECOGNIZED
+            ));
+        $this->_webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(1472041831364,
+            'Transaction Completion', array(
+                \PostFinanceCheckout\Sdk\Model\TransactionCompletionState::FAILED
+            ));
+        $this->_webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(1472041839405, 'Refund',
+            array(
+                \PostFinanceCheckout\Sdk\Model\RefundState::FAILED,
+                \PostFinanceCheckout\Sdk\Model\RefundState::SUCCESSFUL
+            ));
+        $this->_webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(1472041806455, 'Token',
+            array(
+                \PostFinanceCheckout\Sdk\Model\CreationEntityState::ACTIVE,
+                \PostFinanceCheckout\Sdk\Model\CreationEntityState::DELETED,
+                \PostFinanceCheckout\Sdk\Model\CreationEntityState::DELETING,
+                \PostFinanceCheckout\Sdk\Model\CreationEntityState::INACTIVE
+            ));
+        $this->_webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(1472041811051, 'Token Version',
+            array(
+                \PostFinanceCheckout\Sdk\Model\TokenVersionState::ACTIVE,
+                \PostFinanceCheckout\Sdk\Model\TokenVersionState::OBSOLETE
+            ));
     }
 
     /**
@@ -118,7 +112,7 @@ class PostFinanceCheckout_Payment_Model_Service_Webhook extends PostFinanceCheck
                 }
 
                 $existingListeners = $this->getWebhookListeners($spaceId, $webhookUrl);
-                foreach ($this->webhookEntities as $webhookEntity) {
+                foreach ($this->_webhookEntities as $webhookEntity) {
                     /* @var PostFinanceCheckout_Payment_Model_Webhook_Entity $webhookEntity */
                     $exists = false;
                     foreach ($existingListeners as $existingListener) {
@@ -145,7 +139,8 @@ class PostFinanceCheckout_Payment_Model_Service_Webhook extends PostFinanceCheck
      * @param \PostFinanceCheckout\Sdk\Model\WebhookUrl $webhookUrl
      * @return \PostFinanceCheckout\Sdk\Model\WebhookListenerCreate
      */
-    protected function createWebhookListener(PostFinanceCheckout_Payment_Model_Webhook_Entity $entity, $spaceId, \PostFinanceCheckout\Sdk\Model\WebhookUrl $webhookUrl)
+    protected function createWebhookListener(PostFinanceCheckout_Payment_Model_Webhook_Entity $entity, $spaceId,
+        \PostFinanceCheckout\Sdk\Model\WebhookUrl $webhookUrl)
     {
         $webhookListener = new \PostFinanceCheckout\Sdk\Model\WebhookListenerCreate();
         $webhookListener->setEntity($entity->getId());
@@ -171,10 +166,9 @@ class PostFinanceCheckout_Payment_Model_Service_Webhook extends PostFinanceCheck
         $filter->setType(\PostFinanceCheckout\Sdk\Model\EntityQueryFilterType::_AND);
         $filter->setChildren(
             array(
-            $this->createEntityFilter('state', \PostFinanceCheckout\Sdk\Model\CreationEntityState::ACTIVE),
-            $this->createEntityFilter('url.id', $webhookUrl->getId())
-            )
-        );
+                $this->createEntityFilter('state', \PostFinanceCheckout\Sdk\Model\CreationEntityState::ACTIVE),
+                $this->createEntityFilter('url.id', $webhookUrl->getId())
+            ));
         $query->setFilter($filter);
         return $this->getWebhookListenerService()->search($spaceId, $query);
     }
@@ -210,8 +204,7 @@ class PostFinanceCheckout_Payment_Model_Service_Webhook extends PostFinanceCheck
             array(
                 $this->createEntityFilter('state', \PostFinanceCheckout\Sdk\Model\CreationEntityState::ACTIVE),
                 $this->createEntityFilter('url', $this->getUrl())
-            )
-        );
+            ));
         $query->setFilter($filter);
         $result = $this->getWebhookUrlService()->search($spaceId, $query);
         if (! empty($result)) {
@@ -228,12 +221,11 @@ class PostFinanceCheckout_Payment_Model_Service_Webhook extends PostFinanceCheck
      */
     protected function getUrl()
     {
-        return Mage::getUrl(
-            'postfinancecheckout/webhook', array(
-            '_secure' => true,
-            '_store' => Mage::app()->getDefaultStoreView()->getId()
-            )
-        );
+        return Mage::getUrl('postfinancecheckout/webhook',
+            array(
+                '_secure' => true,
+                '_store' => Mage::app()->getDefaultStoreView()->getId()
+            ));
     }
 
     /**
@@ -243,11 +235,12 @@ class PostFinanceCheckout_Payment_Model_Service_Webhook extends PostFinanceCheck
      */
     protected function getWebhookListenerService()
     {
-        if ($this->webhookListenerService == null) {
-            $this->webhookListenerService = new \PostFinanceCheckout\Sdk\Service\WebhookListenerService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        if ($this->_webhookListenerService == null) {
+            $this->_webhookListenerService = new \PostFinanceCheckout\Sdk\Service\WebhookListenerService(
+                Mage::helper('postfinancecheckout_payment')->getApiClient());
         }
 
-        return $this->webhookListenerService;
+        return $this->_webhookListenerService;
     }
 
     /**
@@ -257,10 +250,11 @@ class PostFinanceCheckout_Payment_Model_Service_Webhook extends PostFinanceCheck
      */
     protected function getWebhookUrlService()
     {
-        if ($this->webhookUrlService == null) {
-            $this->webhookUrlService = new \PostFinanceCheckout\Sdk\Service\WebhookUrlService(Mage::helper('postfinancecheckout_payment')->getApiClient());
+        if ($this->_webhookUrlService == null) {
+            $this->_webhookUrlService = new \PostFinanceCheckout\Sdk\Service\WebhookUrlService(
+                Mage::helper('postfinancecheckout_payment')->getApiClient());
         }
 
-        return $this->webhookUrlService;
+        return $this->_webhookUrlService;
     }
 }

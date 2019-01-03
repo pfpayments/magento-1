@@ -1,5 +1,4 @@
 <?php
-
 use PostFinanceCheckout\Sdk\Model\TransactionState;
 
 /**
@@ -30,24 +29,30 @@ class PostFinanceCheckout_Payment_Model_Observer_Payment
         Mage::unregister('postfinancecheckout_payment_capture_invoice');
         Mage::register('postfinancecheckout_payment_capture_invoice', $observer->getInvoice());
     }
-    
+
     /**
      * Cancels the payment online.
-     * 
+     *
      * This is done via event because the payment method disallows online voids.
-     * 
+     *
      * @param Varien_Event_Observer $observer
      */
     public function cancelPayment(Varien_Event_Observer $observer)
     {
         /* @var Mage_Sales_Model_Order_Payment $payment */
         $payment = $observer->getPayment();
-        $payment->getOrder()->setPostfinancecheckoutCanceled(true)->save();
-        $payment->getMethodInstance()->setStore($payment->getOrder()->getStoreId())->cancel($payment);
+        $payment->getOrder()
+            ->setPostfinancecheckoutCanceled(true)
+            ->save();
+        $payment->getMethodInstance()
+            ->setStore($payment->getOrder()
+            ->getStoreId())
+            ->cancel($payment);
     }
 
     /**
-     * Ensures that an invoice with pending capture cannot be cancelled and that the order state is set correctly after cancelling an invoice.
+     * Ensures that an invoice with pending capture cannot be cancelled and that the order state is set correctly after
+     * cancelling an invoice.
      *
      * @param Varien_Event_Observer $observer
      * @throws Mage_Core_Exception
@@ -75,13 +80,15 @@ class PostFinanceCheckout_Payment_Model_Observer_Payment
             return;
         }
 
-        // The invoice can only be cancelled by the merchant if the transaction is in state 'AUTHORIZED', 'COMPLETED' or 'FULFILL'.
+        // The invoice can only be cancelled by the merchant if the transaction is in state 'AUTHORIZED', 'COMPLETED' or
+        // 'FULFILL'.
         /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
         $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
-        $transaction = $transactionService->getTransaction($order->getPostfinancecheckoutSpaceId(), $order->getPostfinancecheckoutTransactionId());
-        if ($transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::AUTHORIZED
-            && $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::COMPLETED
-            && $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::FULFILL) {
+        $transaction = $transactionService->getTransaction($order->getPostfinancecheckoutSpaceId(),
+            $order->getPostfinancecheckoutTransactionId());
+        if ($transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::AUTHORIZED &&
+            $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::COMPLETED &&
+            $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::FULFILL) {
             Mage::throwException(Mage::helper('postfinancecheckout_payment')->__('The invoice cannot be cancelled.'));
         }
 
@@ -89,7 +96,8 @@ class PostFinanceCheckout_Payment_Model_Observer_Payment
         $methodInstance = $order->getPayment()->getMethodInstance();
         if ($methodInstance instanceof PostFinanceCheckout_Payment_Model_Payment_Method_Abstract) {
             /* @var PostFinanceCheckout_Payment_Model_Entity_TransactionInfo $transactionInfo */
-            $transactionInfo = Mage::getModel('postfinancecheckout_payment/entity_transactionInfo')->loadByOrder($order);
+            $transactionInfo = Mage::getModel('postfinancecheckout_payment/entity_transactionInfo')->loadByOrder(
+                $order);
             if ($transactionInfo->getState() == \PostFinanceCheckout\Sdk\Model\TransactionState::AUTHORIZED) {
                 $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING, 'processing_postfinancecheckout');
             }
@@ -125,27 +133,32 @@ class PostFinanceCheckout_Payment_Model_Observer_Payment
 
         // Only allow to create a new invoice if all previous invoices of the order have been cancelled.
         if (! $this->canCreateInvoice($order)) {
-            Mage::throwException(Mage::helper('postfinancecheckout_payment')->__('Only one invoice is allowed. To change the invoice, cancel the existing one first.'));
+            Mage::throwException(
+                Mage::helper('postfinancecheckout_payment')->__(
+                    'Only one invoice is allowed. To change the invoice, cancel the existing one first.'));
         }
 
         if ($invoice->getPostfinancecheckoutCapturePending()) {
             return;
         }
 
-        $invoice->setTransactionId($order->getPostfinancecheckoutSpaceId() . '_' . $order->getPostfinancecheckoutTransactionId());
+        $invoice->setTransactionId(
+            $order->getPostfinancecheckoutSpaceId() . '_' . $order->getPostfinancecheckoutTransactionId());
 
         // This allows to skip the following checks in certain situations.
         if ($order->getPostfinancecheckoutPaymentInvoiceAllowManipulation()) {
             return;
         }
 
-        // The invoice can only be created by the merchant if the transaction is in state 'AUTHORIZED', 'COMPLETED' or 'FULFILL'.
+        // The invoice can only be created by the merchant if the transaction is in state 'AUTHORIZED', 'COMPLETED' or
+        // 'FULFILL'.
         /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
         $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
-        $transaction = $transactionService->getTransaction($order->getPostfinancecheckoutSpaceId(), $order->getPostfinancecheckoutTransactionId());
-        if ($transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::AUTHORIZED
-            && $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::COMPLETED
-            && $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::FULFILL) {
+        $transaction = $transactionService->getTransaction($order->getPostfinancecheckoutSpaceId(),
+            $order->getPostfinancecheckoutTransactionId());
+        if ($transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::AUTHORIZED &&
+            $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::COMPLETED &&
+            $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::FULFILL) {
             Mage::throwException(Mage::helper('postfinancecheckout_payment')->__('The invoice cannot be created.'));
         }
 
@@ -159,13 +172,16 @@ class PostFinanceCheckout_Payment_Model_Observer_Payment
                 /* @var PostFinanceCheckout_Payment_Model_Service_LineItem $lineItemCollection */
                 $lineItemCollection = Mage::getSingleton('postfinancecheckout_payment/service_lineItem');
                 $lineItems = $lineItemCollection->collectInvoiceLineItems($invoice, $invoice->getGrandTotal());
-                $transactionService->updateLineItems($order->getPostfinancecheckoutSpaceId(), $order->getPostfinancecheckoutTransactionId(), $lineItems);
+                $transactionService->updateLineItems($order->getPostfinancecheckoutSpaceId(),
+                    $order->getPostfinancecheckoutTransactionId(), $lineItems);
             }
         } else {
             /* @var PostFinanceCheckout_Payment_Model_Service_TransactionInvoice $transactionInvoiceService */
             $transactionInvoiceService = Mage::getSingleton('postfinancecheckout_payment/service_transactionInvoice');
-            $transactionInvoice = $transactionInvoiceService->getTransactionInvoiceByTransaction($transaction->getLinkedSpaceId(), $transaction->getId());
-            $transactionInvoiceService->replace($transactionInvoice->getLinkedSpaceId(), $transactionInvoice->getId(), $invoice);
+            $transactionInvoice = $transactionInvoiceService->getTransactionInvoiceByTransaction(
+                $transaction->getLinkedSpaceId(), $transaction->getId());
+            $transactionInvoiceService->replace($transactionInvoice->getLinkedSpaceId(), $transactionInvoice->getId(),
+                $invoice);
         }
     }
 
@@ -192,7 +208,8 @@ class PostFinanceCheckout_Payment_Model_Observer_Payment
         if ($order->getPostfinancecheckoutChargeFlow() && Mage::app()->getStore()->isAdmin()) {
             /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
             $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
-            $transaction = $transactionService->getTransaction($order->getPostfinancecheckoutSpaceId(), $order->getPostfinancecheckoutTransactionId());
+            $transaction = $transactionService->getTransaction($order->getPostfinancecheckoutSpaceId(),
+                $order->getPostfinancecheckoutTransactionId());
 
             /* @var PostFinanceCheckout_Payment_Model_Service_ChargeFlow $chargeFlowService */
             $chargeFlowService = Mage::getSingleton('postfinancecheckout_payment/service_chargeFlow');
@@ -201,13 +218,12 @@ class PostFinanceCheckout_Payment_Model_Observer_Payment
             if ($order->getPostfinancecheckoutToken()) {
                 /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
                 $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
-                $transactionService->waitForTransactionState(
-                    $order, array(
-                    \PostFinanceCheckout\Sdk\Model\TransactionState::CONFIRMED,
-                    \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING,
-                    \PostFinanceCheckout\Sdk\Model\TransactionState::PROCESSING
-                    )
-                );
+                $transactionService->waitForTransactionState($order,
+                    array(
+                        \PostFinanceCheckout\Sdk\Model\TransactionState::CONFIRMED,
+                        \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING,
+                        \PostFinanceCheckout\Sdk\Model\TransactionState::PROCESSING
+                    ));
             }
         }
     }
@@ -237,7 +253,7 @@ class PostFinanceCheckout_Payment_Model_Observer_Payment
      * @param Mage_Sales_Model_Order $order
      * @return boolean
      */
-    private function canCreateInvoice(Mage_Sales_Model_Order $order)
+    protected function canCreateInvoice(Mage_Sales_Model_Order $order)
     {
         foreach ($order->getInvoiceCollection() as $invoice) {
             if ($invoice->getId() && $invoice->getState() != Mage_Sales_Model_Order_Invoice::STATE_CANCELED) {

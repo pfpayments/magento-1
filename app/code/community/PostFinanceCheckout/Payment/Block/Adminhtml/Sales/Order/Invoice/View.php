@@ -24,6 +24,7 @@ class PostFinanceCheckout_Payment_Block_Adminhtml_Sales_Order_Invoice_View exten
     public function isInvoicePending()
     {
         $invoice = Mage::registry('current_invoice');
-        return $invoice->getState() != Mage_Sales_Model_Order_Invoice::STATE_PAID && $invoice->getPostfinancecheckoutCapturePending();
+        return $invoice->getState() != Mage_Sales_Model_Order_Invoice::STATE_PAID &&
+            $invoice->getPostfinancecheckoutCapturePending();
     }
 }

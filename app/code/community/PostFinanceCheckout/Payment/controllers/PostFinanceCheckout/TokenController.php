@@ -43,9 +43,8 @@ class PostFinanceCheckout_Payment_PostFinanceCheckout_TokenController extends Ma
         $this->loadLayout();
         $this->getResponse()->setBody(
             $this->getLayout()
-            ->createBlock('postfinancecheckout_payment/adminhtml_customer_token')
-            ->toHtml()
-        );
+                ->createBlock('postfinancecheckout_payment/adminhtml_customer_token')
+                ->toHtml());
     }
 
     /**
@@ -60,7 +59,9 @@ class PostFinanceCheckout_Payment_PostFinanceCheckout_TokenController extends Ma
             Mage::throwException('Token not found.');
         }
 
-        $this->_redirectUrl(Mage::helper('postfinancecheckout_payment')->getBaseGatewayUrl() . '/s/' . $tokenInfo->getSpaceId() . '/payment/token/view/' . $tokenInfo->getTokenId());
+        $this->_redirectUrl(
+            Mage::helper('postfinancecheckout_payment')->getBaseGatewayUrl() . '/s/' . $tokenInfo->getSpaceId() .
+            '/payment/token/view/' . $tokenInfo->getTokenId());
     }
 
     /**
@@ -77,12 +78,12 @@ class PostFinanceCheckout_Payment_PostFinanceCheckout_TokenController extends Ma
             $tokenService->deleteToken($tokenInfo->getSpaceId(), $tokenInfo->getTokenId());
         }
 
-        $this->_getSession()->addSuccess(Mage::helper('postfinancecheckout_payment')->__('The token has been deleted.'));
-        $this->_redirect(
-            'adminhtml/customer/edit', array(
-            'id' => $tokenInfo->getCustomerId(),
-            'active_tab' => 'postfinancecheckout_payment_token'
-            )
-        );
+        $this->_getSession()->addSuccess(
+            Mage::helper('postfinancecheckout_payment')->__('The token has been deleted.'));
+        $this->_redirect('adminhtml/customer/edit',
+            array(
+                'id' => $tokenInfo->getCustomerId(),
+                'active_tab' => 'postfinancecheckout_payment_token'
+            ));
     }
 }

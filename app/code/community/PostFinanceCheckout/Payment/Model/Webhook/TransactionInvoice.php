@@ -13,7 +13,7 @@
 /**
  * Webhook processor to handle transaction inovice transitions.
  */
-class PostFinanceCheckout_Payment_Model_Webhook_TransactionInvoice extends PostFinanceCheckout_Payment_Model_Webhook_AbstractOrderRelated
+class PostFinanceCheckout_Payment_Model_Webhook_TransactionInvoice extends PostFinanceCheckout_Payment_Model_Webhook_Transaction
 {
 
     /**
@@ -36,6 +36,11 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionInvoice extends PostF
 
     protected function processOrderRelatedInner(Mage_Sales_Model_Order $order, $transactionInvoice)
     {
+        parent::processOrderRelatedInner($order,
+            $transactionInvoice->getCompletion()
+                ->getLineItemVersion()
+                ->getTransaction());
+
         /* @var \PostFinanceCheckout\Sdk\Model\TransactionInvoice $transactionInvoice */
         $invoice = $this->getInvoiceForTransaction($transactionInvoice->getLinkedSpaceId(),
             $transactionInvoice->getCompletion()
@@ -80,7 +85,6 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionInvoice extends PostF
             $invoice->setPostfinancecheckoutCapturePending(false)->save();
         }
 
-        $this->sendOrderEmail($order);
         if ($transaction->getState() == \PostFinanceCheckout\Sdk\Model\TransactionState::COMPLETED) {
             $order->setStatus('processing_postfinancecheckout');
         }
@@ -95,55 +99,21 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionInvoice extends PostF
     protected function derecognize(\PostFinanceCheckout\Sdk\Model\Transaction $transaction,
         Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice = null)
     {
+        $isOrderInReview = ($order->getState() == Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW);
+
+        $order->getPayment()->registerVoidNotification();
+
         if ($invoice && Mage_Sales_Model_Order_Invoice::STATE_OPEN == $invoice->getState()) {
-            $isOrderInReview = ($order->getState() == Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW);
-
-            $order->getPayment()->registerVoidNotification();
-
             $invoice->setPostfinancecheckoutCapturePending(false);
             $order->setPostfinancecheckoutPaymentInvoiceAllowManipulation(true);
             $invoice->cancel();
             $order->addRelatedObject($invoice);
-
-            if ($isOrderInReview) {
-                $order->setState(Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW, true);
-            }
-
-            $order->save();
         }
-    }
-
-    /**
-     * Sends the order email if not already sent.
-     *
-     * @param Mage_Sales_Model_Order $order
-     */
-    protected function sendOrderEmail(Mage_Sales_Model_Order $order)
-    {
-        if ($order->getStore()->getConfig('postfinancecheckout_payment/email/order') && ! $order->getEmailSent()) {
-            $order->sendNewOrderEmail();
-        }
-    }
-
-    /**
-     * Returns the invoice for the given transaction.
-     *
-     * @param int $spaceId
-     * @param int $transactionId
-     * @param Mage_Sales_Model_Order $order
-     * @return Mage_Sales_Model_Order_Invoice
-     */
-    protected function getInvoiceForTransaction($spaceId, $transactionId, Mage_Sales_Model_Order $order)
-    {
-        foreach ($order->getInvoiceCollection() as $invoice) {
-            if (strpos($invoice->getTransactionId(), $spaceId . '_' . $transactionId) === 0 &&
-                $invoice->getState() != Mage_Sales_Model_Order_Invoice::STATE_CANCELED) {
-                $invoice->load($invoice->getId());
-                return $invoice;
-            }
+        if ($isOrderInReview) {
+            $order->setState(Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW, true);
         }
 
-        return null;
+        $order->save();
     }
 
     /**

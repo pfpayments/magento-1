@@ -42,25 +42,24 @@ class PostFinanceCheckout_Payment_Model_Webhook_Transaction extends PostFinanceC
         if ($transaction->getState() != $transactionInfo->getState()) {
             switch ($transaction->getState()) {
                 case \PostFinanceCheckout\Sdk\Model\TransactionState::AUTHORIZED:
+                case \PostFinanceCheckout\Sdk\Model\TransactionState::COMPLETED:
                     $this->authorize($transaction, $order);
                     break;
                 case \PostFinanceCheckout\Sdk\Model\TransactionState::DECLINE:
+                    $this->authorize($transaction, $order);
                     $this->decline($transaction, $order);
                     break;
                 case \PostFinanceCheckout\Sdk\Model\TransactionState::FAILED:
                     $this->failed($transaction, $order);
                     break;
                 case \PostFinanceCheckout\Sdk\Model\TransactionState::FULFILL:
-                    if (! $order->getPostfinancecheckoutAuthorized()) {
-                        $this->authorize($transaction, $order);
-                    }
-
+                    $this->authorize($transaction, $order);
                     $this->fulfill($transaction, $order);
                     break;
                 case \PostFinanceCheckout\Sdk\Model\TransactionState::VOIDED:
+                    $this->authorize($transaction, $order);
                     $this->voided($transaction, $order);
                     break;
-                case \PostFinanceCheckout\Sdk\Model\TransactionState::COMPLETED:
                 default:
                     // Nothing to do.
                     break;
@@ -74,21 +73,25 @@ class PostFinanceCheckout_Payment_Model_Webhook_Transaction extends PostFinanceC
 
     protected function authorize(\PostFinanceCheckout\Sdk\Model\Transaction $transaction, Mage_Sales_Model_Order $order)
     {
-        $order->getPayment()
-            ->setTransactionId($transaction->getLinkedSpaceId() . '_' . $transaction->getId())
-            ->setIsTransactionClosed(false);
-        $order->getPayment()->registerAuthorizationNotification($transaction->getAuthorizationAmount());
-        $this->sendOrderEmail($order);
-        $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING, 'processing_postfinancecheckout',
-            Mage::helper('postfinancecheckout_payment')->__(
-                'The order should not be fulfilled yet, as the payment is not guaranteed.'));
-        $order->setPostfinancecheckoutAuthorized(true);
-        $order->save();
-        try {
-            $this->updateShopCustomer($transaction, $order);
-        } catch (Exception $e) {
-            // Try to update the customer, ignore if it fails.
-            Mage::log('Failed to update the customer: ' . $e->getMessage(), null, 'postfinancecheckout.log');
+        if (! $order->getPostfinancecheckoutAuthorized()) {
+            $order->getPayment()
+                ->setTransactionId($transaction->getLinkedSpaceId() . '_' . $transaction->getId())
+                ->setIsTransactionClosed(false);
+            $order->getPayment()->registerAuthorizationNotification($transaction->getAuthorizationAmount());
+            $this->sendOrderEmail($order);
+            if ($transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::FULFILL) {
+                $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING, 'processing_postfinancecheckout',
+                    Mage::helper('postfinancecheckout_payment')->__(
+                        'The order should not be fulfilled yet, as the payment is not guaranteed.'));
+            }
+            $order->setPostfinancecheckoutAuthorized(true);
+            $order->save();
+            try {
+                $this->updateShopCustomer($transaction, $order);
+            } catch (Exception $e) {
+                // Try to update the customer, ignore if it fails.
+                Mage::log('Failed to update the customer: ' . $e->getMessage(), null, 'postfinancecheckout.log');
+            }
         }
     }
 

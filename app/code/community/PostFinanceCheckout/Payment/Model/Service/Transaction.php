@@ -343,7 +343,7 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
                 if (! ($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction) ||
                     $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING ||
                     (! empty($customerId) && $customerId != $order->getCustomerId())) {
-                    return $this->createTransactionByOrder($spaceId, $order, $invoice, $chargeFlow);
+                    Mage::throwException('The order failed because the payment timed out.');
                 }
 
                 $pendingTransaction = new \PostFinanceCheckout\Sdk\Model\TransactionPending();

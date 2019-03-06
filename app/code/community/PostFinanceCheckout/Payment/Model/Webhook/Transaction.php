@@ -109,7 +109,7 @@ class PostFinanceCheckout_Payment_Model_Webhook_Transaction extends PostFinanceC
     protected function failed(\PostFinanceCheckout\Sdk\Model\Transaction $transaction, Mage_Sales_Model_Order $order)
     {
         $invoice = $this->getInvoiceForTransaction($transaction->getLinkedSpaceId(), $transaction->getId(), $order);
-        if ($invoice && $invoice->canCancel()) {
+        if ($invoice != null && $invoice->canCancel()) {
             $order->setPostfinancecheckoutPaymentInvoiceAllowManipulation(true);
             $invoice->cancel();
             $order->addRelatedObject($invoice);
@@ -141,7 +141,7 @@ class PostFinanceCheckout_Payment_Model_Webhook_Transaction extends PostFinanceC
     {
         $order->getPayment()->registerVoidNotification();
         $invoice = $this->getInvoiceForTransaction($transaction->getLinkedSpaceId(), $transaction->getId(), $order);
-        if ($invoice && $invoice->canCancel()) {
+        if ($invoice != null && $invoice->canCancel()) {
             $order->setPostfinancecheckoutPaymentInvoiceAllowManipulation(true);
             $invoice->cancel();
             $order->addRelatedObject($invoice);
@@ -180,7 +180,7 @@ class PostFinanceCheckout_Payment_Model_Webhook_Transaction extends PostFinanceC
             }
         }
 
-        return false;
+        return null;
     }
 
     protected function updateShopCustomer(\PostFinanceCheckout\Sdk\Model\Transaction $transaction,

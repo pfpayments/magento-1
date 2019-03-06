@@ -448,7 +448,7 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
                         'order_id' => $order->getId(),
                         'secret' => $this->getHelper()
                             ->hash($order->getId())
-                    )));
+                    )) . '?utm_nooverride=1');
             $transaction->setFailedUrl(
                 Mage::getUrl('postfinancecheckout/transaction/failure',
                     array(
@@ -456,7 +456,7 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
                         'order_id' => $order->getId(),
                         'secret' => $this->getHelper()
                             ->hash($order->getId())
-                    )));
+                    )) . '?utm_nooverride=1');
         }
     }
 

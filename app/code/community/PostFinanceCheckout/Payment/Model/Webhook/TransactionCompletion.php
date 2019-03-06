@@ -51,7 +51,7 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionCompletion extends Po
     protected function failed(\PostFinanceCheckout\Sdk\Model\Transaction $transaction, Mage_Sales_Model_Order $order)
     {
         $invoice = $this->getInvoiceForTransaction($transaction->getLinkedSpaceId(), $transaction->getId(), $order);
-        if ($invoice && $invoice->getPostfinancecheckoutCapturePending() &&
+        if ($invoice != null && $invoice->getPostfinancecheckoutCapturePending() &&
             $invoice->getState() == Mage_Sales_Model_Order_Invoice::STATE_OPEN) {
             $invoice->setPostfinancecheckoutCapturePending(false);
 
@@ -82,6 +82,6 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionCompletion extends Po
             }
         }
 
-        return false;
+        return null;
     }
 }

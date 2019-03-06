@@ -47,7 +47,7 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionInvoice extends PostF
                 ->getLineItemVersion()
                 ->getTransaction()
                 ->getId(), $order);
-        if (! $invoice || $invoice->getState() == Mage_Sales_Model_Order_Invoice::STATE_OPEN) {
+        if ($invoice == null || $invoice->getState() == Mage_Sales_Model_Order_Invoice::STATE_OPEN) {
             switch ($transactionInvoice->getState()) {
                 case \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::NOT_APPLICABLE:
                 case \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::PAID:

@@ -341,6 +341,9 @@ class PostFinanceCheckout_Payment_Model_Payment_Method_Abstract extends Mage_Pay
         parent::cancel($payment);
 
         $order = $payment->getOrder();
+        if ($order->getPostfinancecheckoutDerecognized()) {
+            return $this;
+        }
 
         /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
         $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
@@ -353,7 +356,7 @@ class PostFinanceCheckout_Payment_Model_Payment_Method_Abstract extends Mage_Pay
         } catch (Exception $e) {
             Mage::throwException($this->getHelper()->__('The transaction linked to the order could not be loaded.'));
         }
-
+        
         if ($transaction->getState() == TransactionState::AUTHORIZED) {
             $this->voidOnline($payment);
         } else {

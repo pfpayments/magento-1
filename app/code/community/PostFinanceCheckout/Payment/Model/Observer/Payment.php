@@ -76,7 +76,8 @@ class PostFinanceCheckout_Payment_Model_Observer_Payment
         }
 
         // This allows to skip the following checks in certain situations.
-        if ($order->getPostfinancecheckoutPaymentInvoiceAllowManipulation()) {
+        if ($order->getPostfinancecheckoutPaymentInvoiceAllowManipulation()
+            || $order->getPostfinancecheckoutDerecognized()) {
             return;
         }
 

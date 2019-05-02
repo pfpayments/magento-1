@@ -33,8 +33,16 @@ class PostFinanceCheckout_Payment_Model_Service_TransactionInvoice extends PostF
     public function getTransactionInvoiceByTransaction($spaceId, $transactionId)
     {
         $query = new \PostFinanceCheckout\Sdk\Model\EntityQuery();
+        $filter = new \PostFinanceCheckout\Sdk\Model\EntityQueryFilter();
+        $filter->setType(\PostFinanceCheckout\Sdk\Model\EntityQueryFilterType::_AND);
+        $filter->setChildren(
+            array(
+                $this->createEntityFilter('state', \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::CANCELED,
+                    \PostFinanceCheckout\Sdk\Model\CriteriaOperator::NOT_EQUALS),
+                $this->createEntityFilter('completion.lineItemVersion.transaction.id', $transactionId)
+            ));
+        $query->setFilter($filter);
         $query->setNumberOfEntities(1);
-        $query->setFilter($this->createEntityFilter('completion.lineItemVersion.transaction.id', $transactionId));
         $result = $this->getTransactionInvoiceService()->search($spaceId, $query);
         if ($result != null && ! empty($result)) {
             return current($result);
@@ -53,8 +61,16 @@ class PostFinanceCheckout_Payment_Model_Service_TransactionInvoice extends PostF
     public function getTransactionInvoiceByCompletion($spaceId, $completionId)
     {
         $query = new \PostFinanceCheckout\Sdk\Model\EntityQuery();
+        $filter = new \PostFinanceCheckout\Sdk\Model\EntityQueryFilter();
+        $filter->setType(\PostFinanceCheckout\Sdk\Model\EntityQueryFilterType::_AND);
+        $filter->setChildren(
+            array(
+                $this->createEntityFilter('state', \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::CANCELED,
+                    \PostFinanceCheckout\Sdk\Model\CriteriaOperator::NOT_EQUALS),
+                $this->createEntityFilter('completion.id', $completionId)
+            ));
+        $query->setFilter($filter);
         $query->setNumberOfEntities(1);
-        $query->setFilter($this->createEntityFilter('completion.id', $completionId));
         $result = $this->getTransactionInvoiceService()->search($spaceId, $query);
         if ($result != null && ! empty($result)) {
             return current($result);

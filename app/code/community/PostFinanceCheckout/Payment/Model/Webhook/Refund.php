@@ -52,6 +52,10 @@ class PostFinanceCheckout_Payment_Model_Webhook_Refund extends PostFinanceChecko
 
     protected function refunded(\PostFinanceCheckout\Sdk\Model\Refund $refund, Mage_Sales_Model_Order $order)
     {
+        if ($this->isDerecognizedInvoice($refund, $order)) {
+            return;
+        }
+
         if ($order->getPostfinancecheckoutCanceled()) {
             return;
         }
@@ -75,6 +79,20 @@ class PostFinanceCheckout_Payment_Model_Webhook_Refund extends PostFinanceChecko
         $refundJob->loadByExternalId($refund->getExternalId());
         if ($refundJob->getId() > 0) {
             $refundJob->delete();
+        }
+    }
+
+    protected function isDerecognizedInvoice(\PostFinanceCheckout\Sdk\Model\Refund $refund,
+        Mage_Sales_Model_Order $order)
+    {
+        /* @var PostFinanceCheckout_Payment_Model_Service_TransactionInvoice $invoiceService */
+        $invoiceService = Mage::getSingleton('postfinancecheckout_payment/service_transactionInvoice');
+        $transactionInvoice = $invoiceService->getTransactionInvoiceByTransaction(
+            $order->getPostfinancecheckoutSpaceId(), $order->getPostfinancecheckoutTransactionId());
+        if ($transactionInvoice->getState() == \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::DERECOGNIZED) {
+            return true;
+        } else {
+            return false;
         }
     }
 }

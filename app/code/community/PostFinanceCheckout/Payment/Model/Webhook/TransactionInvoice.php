@@ -99,21 +99,13 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionInvoice extends PostF
     protected function derecognize(\PostFinanceCheckout\Sdk\Model\Transaction $transaction,
         Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice = null)
     {
-        $isOrderInReview = ($order->getState() == Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW);
-
-        $order->getPayment()->registerVoidNotification();
-
         if ($invoice && Mage_Sales_Model_Order_Invoice::STATE_OPEN == $invoice->getState()) {
             $invoice->setPostfinancecheckoutCapturePending(false);
-            $order->setPostfinancecheckoutPaymentInvoiceAllowManipulation(true);
-            $invoice->cancel();
             $order->addRelatedObject($invoice);
+            
+            $order->setPostfinancecheckoutDerecognized(true);
+            $order->save();
         }
-        if ($isOrderInReview) {
-            $order->setState(Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW, true);
-        }
-
-        $order->save();
     }
 
     /**

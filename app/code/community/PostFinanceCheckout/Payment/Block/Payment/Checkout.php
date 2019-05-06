@@ -57,4 +57,16 @@ class PostFinanceCheckout_Payment_Block_Payment_Checkout extends Mage_Payment_Bl
             return false;
         }
     }
+
+    /**
+     * Returns the URL to PostFinance Checkout's Javascript library to collect customer data.
+     *
+     * @return string
+     */
+    public function getDeviceJavascriptUrl()
+    {
+        /* @var PostFinanceCheckout_Payment_Helper_Data $helper */
+        $helper = Mage::helper('postfinancecheckout_payment');
+        return $helper->getDeviceJavascriptUrl();
+    }
 }

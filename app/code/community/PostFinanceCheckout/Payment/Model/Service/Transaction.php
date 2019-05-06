@@ -425,6 +425,7 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
             $transaction->setSpaceViewId(
                 $order->getStore()
                     ->getConfig('postfinancecheckout_payment/general/store_view_id'));
+            $transaction->setDeviceSessionIdentifier($this->getDeviceSessionIdentifier());
         }
 
         /* @var PostFinanceCheckout_Payment_Model_Service_LineItem $lineItems */
@@ -606,6 +607,7 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
             $transaction->setSpaceViewId(
                 $quote->getStore()
                     ->getConfig('postfinancecheckout_payment/general/store_view_id'));
+            $transaction->setDeviceSessionIdentifier($this->getDeviceSessionIdentifier());
         }
 
         /* @var PostFinanceCheckout_Payment_Model_Service_LineItem $lineItems */
@@ -759,5 +761,17 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
         $address->setPostCode($this->fixLength($this->removeLinebreaks($customerAddress->getPostcode()), 40));
         $address->setStreet($this->fixLength($customerAddress->getStreetFull(), 300));
         return $address;
+    }
+    
+    /**
+     * Gets the device session identifier from the cookie.
+     *
+     * @return string|NULL
+     */
+    protected function getDeviceSessionIdentifier()
+    {
+        /* @var Mage_Core_Model_Cookie $cookie */
+        $cookie = Mage::getSingleton('core/cookie');
+        return $cookie->get('postfinancecheckout_device_id');
     }
 }

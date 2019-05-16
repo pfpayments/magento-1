@@ -76,8 +76,8 @@ class PostFinanceCheckout_Payment_Model_Observer_Payment
         }
 
         // This allows to skip the following checks in certain situations.
-        if ($order->getPostfinancecheckoutPaymentInvoiceAllowManipulation()
-            || $order->getPostfinancecheckoutDerecognized()) {
+        if ($order->getPostfinancecheckoutPaymentInvoiceAllowManipulation() ||
+            $order->getPostfinancecheckoutDerecognized()) {
             return;
         }
 
@@ -183,6 +183,61 @@ class PostFinanceCheckout_Payment_Model_Observer_Payment
                 $transaction->getLinkedSpaceId(), $transaction->getId());
             $transactionInvoiceService->replace($transactionInvoice->getLinkedSpaceId(), $transactionInvoice->getId(),
                 $invoice);
+        }
+    }
+
+    /**
+     * Ensures that the transaction is in pending state.
+     * 
+     * @param Varien_Event_Observer $observer
+     * @throws Mage_Payment_Model_Info_Exception
+     */
+    public function paymentImportDataBefore(Varien_Event_Observer $observer)
+    {
+        $input = $observer->getInput();
+
+        /* @var Mage_Payment_Helper_Data $paymentHelper */
+        $paymentHelper = Mage::helper('payment');
+        $method = $paymentHelper->getMethodInstance($input->getMethod());
+        if ($method instanceof PostFinanceCheckout_Payment_Model_Payment_Method_Abstract) {
+            /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
+            $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
+            /* @var Mage_Checkout_Model_Session $checkoutSession */
+            $checkoutSession = Mage::getSingleton('checkout/session');
+            $transaction = $transactionService->getTransaction(
+                $checkoutSession->getQuote()
+                    ->getPostfinancecheckoutSpaceId(),
+                $checkoutSession->getQuote()
+                    ->getPostfinancecheckoutTransactionId());
+            if (! ($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction) ||
+                $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING) {
+                throw new Mage_Payment_Model_Info_Exception(
+                    Mage::helper('postfinancecheckout_payment')->__('The payment timed out. Please try again.'));
+            }
+        }
+    }
+
+    /**
+     * Ensures that the transaction is in pending state.
+     *
+     * @param Varien_Event_Observer $observer
+     * @throws Mage_Payment_Model_Info_Exception
+     */
+    public function quoteSubmitBefore(Varien_Event_Observer $observer)
+    {
+        /* @var Mage_Sales_Model_Quote $quote */
+        $quote = $observer->getQuote();
+
+        if ($quote->getPayment()->getMethodInstance() instanceof PostFinanceCheckout_Payment_Model_Payment_Method_Abstract) {
+            /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
+            $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
+            $transaction = $transactionService->getTransaction($quote->getPostfinancecheckoutSpaceId(),
+                $quote->getPostfinancecheckoutTransactionId());
+            if (! ($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction) ||
+                $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING) {
+                throw new Mage_Payment_Model_Info_Exception(
+                    Mage::helper('postfinancecheckout_payment')->__('The payment timed out. Please try again.'));
+            }
         }
     }
 

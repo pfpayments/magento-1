@@ -69,4 +69,14 @@ class PostFinanceCheckout_Payment_Block_Payment_Checkout extends Mage_Payment_Bl
         $helper = Mage::helper('postfinancecheckout_payment');
         return $helper->getDeviceJavascriptUrl();
     }
+    
+    /**
+     * Returns the URL to fetch the current information to collect the payment data.
+     * 
+     * @return string
+     */
+    public function getInformationUrl()
+    {
+        return $this->getUrl('postfinancecheckout/transaction/information');
+    }
 }

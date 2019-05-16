@@ -12,6 +12,8 @@ MagePostFinanceCheckout.Checkout.Type.MagentoOnePage = Class.create(
 		originalPaymentSave: function() {},
 
 		initialize: function() {
+			Payment.prototype.init = Payment.prototype.init.wrap(this.initPaymentSection.bind(this));
+			
 			Payment.prototype.switchMethod = Payment.prototype.switchMethod.wrap(this.switchMethod.bind(this));
 
 			this.originalPaymentSave = Payment.prototype.save.bind(payment);
@@ -33,7 +35,11 @@ MagePostFinanceCheckout.Checkout.Type.MagentoOnePage = Class.create(
 			
 			$(this.getPaymentMethod(payment.currentMethod).container + '_errors').innerHTML = formattedErrors;
 		},
-
+		
+		initPaymentSection: function(callOriginal){
+			MagePostFinanceCheckout.Checkout.fetchInformation(callOriginal);
+		},
+		
 		/**
 		 * Initializes the payment iframe when the customer switches the payment method.
 		 */

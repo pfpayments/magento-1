@@ -255,6 +255,18 @@ class PostFinanceCheckout_Payment_Block_Payment_Info extends Mage_Payment_Block_
             $this->getTransactionInfo()->getSpaceId() . '/payment/transaction/view/' .
             $this->getTransactionInfo()->getTransactionId();
     }
+    
+    /**
+     * Returns the URL to the customer detail view in PostFinance Checkout.
+     *
+     * @return string
+     */
+    public function getCustomerUrl()
+    {
+        return Mage::helper('postfinancecheckout_payment')->getBaseGatewayUrl() . '/s/' .
+            $this->getTransactionInfo()->getSpaceId() . '/payment/customer/transaction/view/' .
+            $this->getTransactionInfo()->getTransactionId();
+    }
 
     /**
      * Returns the translated name of the transaction's state.

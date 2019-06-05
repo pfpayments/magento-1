@@ -37,7 +37,12 @@ abstract class PostFinanceCheckout_Payment_Model_Webhook_AbstractOrderRelated ex
 
                 $this->lock($order);
                 $order->load($order->getId());
+                
+                /* @var Mage_Core_Model_App_Emulation $appEmulation */
+                $appEmulation = Mage::getSingleton('core/app_emulation');
+                $initialEnvironmentInfo = $appEmulation->startEnvironmentEmulation($order->getStoreId());
                 $this->processOrderRelatedInner($order, $entity);
+                $appEmulation->stopEnvironmentEmulation($initialEnvironmentInfo);
             }
 
             $order->getResource()->commit();

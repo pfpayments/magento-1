@@ -1,5 +1,4 @@
 <?php
-use PostFinanceCheckout\Sdk\Model\TransactionState;
 
 /**
  * PostFinance Checkout Magento 1
@@ -163,7 +162,7 @@ class PostFinanceCheckout_Payment_Model_Observer_Payment
             Mage::throwException(Mage::helper('postfinancecheckout_payment')->__('The invoice cannot be created.'));
         }
 
-        if ($transaction->getState() == TransactionState::AUTHORIZED) {
+        if ($transaction->getState() == \PostFinanceCheckout\Sdk\Model\TransactionState::AUTHORIZED) {
             // Completes the transaction on the gateway if necessary, otherwise just update the line items.
             if ($invoice->getPostfinancecheckoutPaymentNeedsCapture()) {
                 $order->getPayment()

@@ -86,13 +86,16 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
         $transaction->setId($payment->getOrder()
             ->getPostfinancecheckoutTransactionId());
 
-        $reductions = $this->getProductReductions($creditmemo);
+        $baseLineItems = $this->getBaseLineItems($creditmemo->getOrder()
+            ->getPostfinancecheckoutSpaceId(), $transaction);
+
+        $reductions = $this->getProductReductions($creditmemo, $baseLineItems);
         $shippingReduction = $this->getShippingReduction($creditmemo);
         if ($shippingReduction != null) {
             $reductions[] = $shippingReduction;
         }
 
-        $reductions = $this->fixReductions($creditmemo, $transaction, $reductions);
+        $reductions = $this->fixReductions($creditmemo, $transaction, $reductions, $baseLineItems);
 
         $refund = new \PostFinanceCheckout\Sdk\Model\RefundCreate();
         $refund->setExternalId(uniqid($creditmemo->getOrderId() . '-'));
@@ -111,14 +114,12 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
      * @param Mage_Sales_Model_Order_Creditmemo $creditmemo
      * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
      * @param \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate[] $reductions
+     * @param \PostFinanceCheckout\Sdk\Model\LineItem[] $baseLineItems
      * @return \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate[]
      */
     protected function fixReductions(Mage_Sales_Model_Order_Creditmemo $creditmemo,
-        \PostFinanceCheckout\Sdk\Model\Transaction $transaction, array $reductions)
+        \PostFinanceCheckout\Sdk\Model\Transaction $transaction, array $reductions, array $baseLineItems)
     {
-        $baseLineItems = $this->getBaseLineItems($creditmemo->getOrder()
-            ->getPostfinancecheckoutSpaceId(), $transaction);
-
         /* @var PostFinanceCheckout_Payment_Helper_LineItem $lineItemHelper */
         $lineItemHelper = Mage::helper('postfinancecheckout_payment/lineItem');
         $reductionAmount = $lineItemHelper->getReductionAmount($baseLineItems, $reductions,
@@ -151,9 +152,10 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
      * Returns the line item reductions for the creditmemo's items.
      *
      * @param Mage_Sales_Model_Order_Creditmemo $creditmemo
+     * @param \PostFinanceCheckout\Sdk\Model\LineItem[] $baseLineItems
      * @return \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate[]
      */
-    protected function getProductReductions(Mage_Sales_Model_Order_Creditmemo $creditmemo)
+    protected function getProductReductions(Mage_Sales_Model_Order_Creditmemo $creditmemo, array $baseLineItems)
     {
         $reductions = array();
         foreach ($creditmemo->getAllItems() as $item) {
@@ -176,15 +178,33 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
             $reductions[] = $reduction;
 
             if ($orderItem->getDiscountAmount() != 0) {
-                $reduction = new \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate();
-                $reduction->setLineItemUniqueId($orderItem->getQuoteItemId() . '-discount');
-                $reduction->setQuantityReduction($item->getQty());
-                $reduction->setUnitPriceReduction(0);
-                $reductions[] = $reduction;
+                if ($this->hasBaseLineItem($baseLineItems, $orderItem->getQuoteItemId() . '-discount')) {
+                    $reduction = new \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate();
+                    $reduction->setLineItemUniqueId($orderItem->getQuoteItemId() . '-discount');
+                    $reduction->setQuantityReduction($item->getQty());
+                    $reduction->setUnitPriceReduction(0);
+                    $reductions[] = $reduction;
+                }
             }
         }
 
         return $reductions;
+    }
+
+    /**
+     *
+     * @param \PostFinanceCheckout\Sdk\Model\LineItem[] $baseLineItems
+     * @param string $uniqueId
+     * @return boolean
+     */
+    protected function hasBaseLineItem(array $baseLineItems, $uniqueId)
+    {
+        foreach ($baseLineItems as $lineItem) {
+            if ($lineItem->getUniqueId() == $uniqueId) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -297,14 +317,7 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
                 case \PostFinanceCheckout\Sdk\Model\LineItemType::PRODUCT:
                     if ($reduction->getQuantityReduction() > 0) {
                         $refundQuantities[$orderItemMap[$reduction->getLineItemUniqueId()]->getId()] = $reduction->getQuantityReduction();
-                        $creditmemoAmount += $reduction->getQuantityReduction() *
-                            $orderItemMap[$reduction->getLineItemUniqueId()]->getPriceInclTax();
-
-                        $discount = $this->findProductDiscount($refund->getTransaction()
-                            ->getLineItems(), $reduction->getLineItemUniqueId());
-                        if ($discount != null) {
-                            $creditmemoAmount += $discount->getAmountIncludingTax();
-                        }
+                        $creditmemoAmount += $reduction->getQuantityReduction() * $lineItem->getUnitPriceIncludingTax();
                     }
                     break;
                 case \PostFinanceCheckout\Sdk\Model\LineItemType::FEE:
@@ -342,21 +355,6 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
             'adjustment_positive' => $positiveAdjustment,
             'adjustment_negative' => $negativeAdjustment
         );
-    }
-
-    /**
-     *
-     * @param \PostFinanceCheckout\Sdk\Model\LineItem[] $lineItems
-     * @param string $productId
-     */
-    protected function findProductDiscount(array $lineItems, $productId)
-    {
-        foreach ($lineItems as $lineItem) {
-            if ($lineItem->getUniqueId() == $productId . '-discount') {
-                return $lineItem;
-            }
-        }
-        return null;
     }
 
     /**

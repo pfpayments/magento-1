@@ -347,24 +347,29 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
     /**
      * Update the transaction with the given order's data.
      *
-     * @param int $transactionId
-     * @param int $spaceId
+     * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
      * @param Mage_Sales_Model_Order $order
      * @param Mage_Sales_Model_Order_Invoice $invoice
      * @param bool $chargeFlow
      * @return \PostFinanceCheckout\Sdk\Model\Transaction
      */
-    public function confirmTransaction($transactionId, $spaceId, Mage_Sales_Model_Order $order,
-        Mage_Sales_Model_Order_Invoice $invoice, $chargeFlow = false, \PostFinanceCheckout\Sdk\Model\Token $token = null)
+    public function confirmTransaction(\PostFinanceCheckout\Sdk\Model\Transaction $transaction,
+        Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice, $chargeFlow = false,
+        \PostFinanceCheckout\Sdk\Model\Token $token = null)
     {
+        $spaceId = $transaction->getLinkedSpaceId();
+        $transactionId = $transaction->getId();
+
         for ($i = 0; $i < 5; $i ++) {
             try {
-                $transaction = $this->getTransactionService()->read($spaceId, $transactionId);
-                $customerId = $transaction->getCustomerId();
-                if (! ($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction) ||
-                    $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING ||
-                    (! empty($customerId) && $customerId != $order->getCustomerId())) {
-                    Mage::throwException('The order failed because the payment timed out.');
+                if ($i > 0) {
+                    $transaction = $this->getTransactionService()->read($spaceId, $transactionId);
+                    $customerId = $transaction->getCustomerId();
+                    if (! ($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction) ||
+                        $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING ||
+                        (! empty($customerId) && $customerId != $order->getCustomerId())) {
+                        Mage::throwException('The order failed because the payment timed out.');
+                    }
                 }
 
                 $pendingTransaction = new \PostFinanceCheckout\Sdk\Model\TransactionPending();

@@ -253,24 +253,28 @@ class PostFinanceCheckout_Payment_Model_Payment_Method_Abstract extends Mage_Pay
 
         /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
         $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
-        $transaction = $transactionService->confirmTransaction($quote->getPostfinancecheckoutTransactionId(),
-            $quote->getPostfinancecheckoutSpaceId(), $order, $this->getCheckoutInvoice(),
+
+        $this->getCheckoutOrder()->setPostfinancecheckoutSpaceId($quote->getPostfinancecheckoutSpaceId());
+        $this->getCheckoutOrder()->setPostfinancecheckoutTransactionId(
+            $quote->getPostfinancecheckoutTransactionId());
+        $order->setPostfinancecheckoutSpaceId($quote->getPostfinancecheckoutSpaceId());
+        $order->setPostfinancecheckoutTransactionId($quote->getPostfinancecheckoutTransactionId());
+        $order->save();
+
+        $transaction = $transactionService->getTransaction($quote->getPostfinancecheckoutSpaceId(),
+            $quote->getPostfinancecheckoutTransactionId());
+        $transactionService->updateTransactionInfo($transaction, $order);
+
+        $transaction = $transactionService->confirmTransaction($transaction, $order, $this->getCheckoutInvoice(),
             Mage::app()->getStore()
                 ->isAdmin(), $token);
         $transactionService->updateTransactionInfo($transaction, $order);
-
-        $this->getCheckoutOrder()->setPostfinancecheckoutSpaceId($transaction->getLinkedSpaceId());
-        $this->getCheckoutOrder()->setPostfinancecheckoutTransactionId($transaction->getId());
-        $order->setPostfinancecheckoutSpaceId($transaction->getLinkedSpaceId());
-        $order->setPostfinancecheckoutTransactionId($transaction->getId());
 
         if (Mage::app()->getStore()->isAdmin()) {
             // Set the selected token on the order and tell it to apply the charge flow after it is saved.
             $this->getCheckoutOrder()->setPostfinancecheckoutChargeFlow(true);
             $this->getCheckoutOrder()->setPostfinancecheckoutToken($token);
         }
-
-        $order->save();
     }
 
     /**
@@ -356,7 +360,7 @@ class PostFinanceCheckout_Payment_Model_Payment_Method_Abstract extends Mage_Pay
         } catch (Exception $e) {
             Mage::throwException($this->getHelper()->__('The transaction linked to the order could not be loaded.'));
         }
-        
+
         if ($transaction->getState() == TransactionState::AUTHORIZED) {
             $this->voidOnline($payment);
         } else {

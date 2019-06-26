@@ -254,12 +254,22 @@ class PostFinanceCheckout_Payment_Model_Payment_Method_Abstract extends Mage_Pay
         /* @var PostFinanceCheckout_Payment_Model_Service_Transaction $transactionService */
         $transactionService = Mage::getSingleton('postfinancecheckout_payment/service_transaction');
 
+        if ($order->getPostfinancecheckoutSpaceId() != null ||
+            $order->getPostfinancecheckoutTransactionId() != null) {
+            Mage::throwException(
+                $this->getHelper()->__('The PostFinance Checkout payment transaction has already been set on the order.'));
+        }
+
         $this->getCheckoutOrder()->setPostfinancecheckoutSpaceId($quote->getPostfinancecheckoutSpaceId());
         $this->getCheckoutOrder()->setPostfinancecheckoutTransactionId(
             $quote->getPostfinancecheckoutTransactionId());
         $order->setPostfinancecheckoutSpaceId($quote->getPostfinancecheckoutSpaceId());
         $order->setPostfinancecheckoutTransactionId($quote->getPostfinancecheckoutTransactionId());
         $order->save();
+
+        if (! $this->checkTransactionInfo($order)) {
+            return;
+        }
 
         $transaction = $transactionService->getTransaction($quote->getPostfinancecheckoutSpaceId(),
             $quote->getPostfinancecheckoutTransactionId());
@@ -274,6 +284,24 @@ class PostFinanceCheckout_Payment_Model_Payment_Method_Abstract extends Mage_Pay
             // Set the selected token on the order and tell it to apply the charge flow after it is saved.
             $this->getCheckoutOrder()->setPostfinancecheckoutChargeFlow(true);
             $this->getCheckoutOrder()->setPostfinancecheckoutToken($token);
+        }
+    }
+
+    /**
+     * Checks whether the transaction info for the transaction linked to the order is already linked to another order.
+     *
+     * @param Mage_Sales_Model_Order $order
+     * @return boolean
+     */
+    protected function checkTransactionInfo(Mage_Sales_Model_Order $order)
+    {
+        /* @var PostFinanceCheckout_Payment_Model_Entity_TransactionInfo $info */
+        $info = Mage::getModel('postfinancecheckout_payment/entity_transactionInfo')->loadByTransaction(
+            $order->getPostfinancecheckoutSpaceId(), $order->getPostfinancecheckoutTransactionId());
+        if ($info->getId() && $info->getOrderId() != $order->getId()) {
+            return false;
+        } else {
+            return true;
         }
     }
 

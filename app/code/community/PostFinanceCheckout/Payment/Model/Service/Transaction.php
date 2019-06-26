@@ -198,6 +198,12 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
         /* @var PostFinanceCheckout_Payment_Model_Entity_TransactionInfo $info */
         $info = Mage::getModel('postfinancecheckout_payment/entity_transactionInfo')->loadByTransaction(
             $transaction->getLinkedSpaceId(), $transaction->getId());
+
+        if ($info->getId() && $info->getOrderId() != $order->getId()) {
+            Mage::throwException(
+                $this->getHelper()->__('The PostFinance Checkout transaction info is already linked to a different order.'));
+        }
+
         $info->setTransactionId($transaction->getId());
         $info->setAuthorizationAmount($transaction->getAuthorizationAmount());
         $info->setOrderId($order->getId());
@@ -357,6 +363,10 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
         Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice, $chargeFlow = false,
         \PostFinanceCheckout\Sdk\Model\Token $token = null)
     {
+        if ($transaction->getState() == \PostFinanceCheckout\Sdk\Model\TransactionState::CONFIRMED) {
+            return $transaction;
+        }
+
         $spaceId = $transaction->getLinkedSpaceId();
         $transactionId = $transaction->getId();
 
@@ -365,7 +375,10 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
                 if ($i > 0) {
                     $transaction = $this->getTransactionService()->read($spaceId, $transactionId);
                     $customerId = $transaction->getCustomerId();
-                    if (! ($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction) ||
+                    if ($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction &&
+                        $transaction->getState() == \PostFinanceCheckout\Sdk\Model\TransactionState::CONFIRMED) {
+                        return $transaction;
+                    } else if (! ($transaction instanceof \PostFinanceCheckout\Sdk\Model\Transaction) ||
                         $transaction->getState() != \PostFinanceCheckout\Sdk\Model\TransactionState::PENDING ||
                         (! empty($customerId) && $customerId != $order->getCustomerId())) {
                         Mage::throwException('The order failed because the payment timed out.');

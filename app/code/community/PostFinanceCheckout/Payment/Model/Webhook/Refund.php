@@ -53,7 +53,22 @@ class PostFinanceCheckout_Payment_Model_Webhook_Refund extends PostFinanceChecko
     protected function refunded(\PostFinanceCheckout\Sdk\Model\Refund $refund, Mage_Sales_Model_Order $order)
     {
         if ($this->isDerecognizedInvoice($refund, $order)) {
-            return;
+            $invoice = $this->getInvoiceForTransaction($refund->getLinkedSpaceId(), $refund->getTransaction()
+                ->getId(), $order);
+            if ($invoice == null || $invoice->getState() == Mage_Sales_Model_Order_Invoice::STATE_OPEN) {
+                if ($invoice == null) {
+                    $order->setPostfinancecheckoutPaymentInvoiceAllowManipulation(true);
+                }
+                
+                if ($invoice == null || $invoice->getState() == Mage_Sales_Model_Order_Invoice::STATE_OPEN) {
+                    $order->getPayment()->registerCaptureNotification($refund->getAmount());
+                    if ($invoice != null) {
+                        $invoice->setPostfinancecheckoutCapturePending(false);
+                        $order->addRelatedObject($invoice);
+                    }
+                }
+                $order->save();
+            }
         }
 
         if ($order->getPostfinancecheckoutCanceled()) {
@@ -94,5 +109,26 @@ class PostFinanceCheckout_Payment_Model_Webhook_Refund extends PostFinanceChecko
         } else {
             return false;
         }
+    }
+
+    /**
+     * Returns the invoice for the given transaction.
+     *
+     * @param int $spaceId
+     * @param int $transactionId
+     * @param Mage_Sales_Model_Order $order
+     * @return Mage_Sales_Model_Order_Invoice
+     */
+    protected function getInvoiceForTransaction($spaceId, $transactionId, Mage_Sales_Model_Order $order)
+    {
+        foreach ($order->getInvoiceCollection() as $invoice) {
+            if (strpos($invoice->getTransactionId(), $spaceId . '_' . $transactionId) === 0 &&
+                $invoice->getState() != Mage_Sales_Model_Order_Invoice::STATE_CANCELED) {
+                $invoice->load($invoice->getId());
+                return $invoice;
+            }
+        }
+
+        return null;
     }
 }

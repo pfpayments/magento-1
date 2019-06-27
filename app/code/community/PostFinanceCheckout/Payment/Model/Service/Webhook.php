@@ -71,8 +71,7 @@ class PostFinanceCheckout_Payment_Model_Service_Webhook extends PostFinanceCheck
             'Transaction Invoice',
             array(
                 \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::NOT_APPLICABLE,
-                \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::PAID,
-                \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::DERECOGNIZED
+                \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::PAID
             ));
         $this->_webhookEntities[] = new PostFinanceCheckout_Payment_Model_Webhook_Entity(1472041831364,
             'Transaction Completion', array(

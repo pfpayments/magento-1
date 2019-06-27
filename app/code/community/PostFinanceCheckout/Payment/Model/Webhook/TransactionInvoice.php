@@ -56,9 +56,6 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionInvoice extends PostF
                         ->getTransaction(), $order, $transactionInvoice->getAmount(), $invoice);
                     break;
                 case \PostFinanceCheckout\Sdk\Model\TransactionInvoiceState::DERECOGNIZED:
-                    $this->derecognize($transactionInvoice->getCompletion()
-                        ->getLineItemVersion()
-                        ->getTransaction(), $order, $invoice);
                 default:
                     // Nothing to do.
                     break;
@@ -94,18 +91,6 @@ class PostFinanceCheckout_Payment_Model_Webhook_TransactionInvoice extends PostF
         }
 
         $order->save();
-    }
-
-    protected function derecognize(\PostFinanceCheckout\Sdk\Model\Transaction $transaction,
-        Mage_Sales_Model_Order $order, Mage_Sales_Model_Order_Invoice $invoice = null)
-    {
-        if ($invoice && Mage_Sales_Model_Order_Invoice::STATE_OPEN == $invoice->getState()) {
-            $invoice->setPostfinancecheckoutCapturePending(false);
-            $order->addRelatedObject($invoice);
-            
-            $order->setPostfinancecheckoutDerecognized(true);
-            $order->save();
-        }
     }
 
     /**

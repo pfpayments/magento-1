@@ -71,7 +71,8 @@ class PostFinanceCheckout_Payment_Model_Webhook_Transaction extends PostFinanceC
         $transactionStoreService->updateTransactionInfo($transaction, $order);
     }
 
-    protected function authorize(\PostFinanceCheckout\Sdk\Model\Transaction $transaction, Mage_Sales_Model_Order $order)
+    protected function authorize(\PostFinanceCheckout\Sdk\Model\Transaction $transaction,
+        Mage_Sales_Model_Order $order)
     {
         if (! $order->getPostfinancecheckoutAuthorized()) {
             $order->getPayment()
@@ -186,7 +187,8 @@ class PostFinanceCheckout_Payment_Model_Webhook_Transaction extends PostFinanceC
     protected function updateShopCustomer(\PostFinanceCheckout\Sdk\Model\Transaction $transaction,
         Mage_Sales_Model_Order $order)
     {
-        if ($order->getCustomerIsGuest()) {
+        if ($order->getCustomerIsGuest() || $order->getBillingAddress() == null ||
+            ! $order->getBillingAddress()->getCustomerAddressId()) {
             return;
         }
 

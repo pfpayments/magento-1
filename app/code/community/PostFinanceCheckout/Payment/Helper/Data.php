@@ -181,6 +181,9 @@ class PostFinanceCheckout_Payment_Helper_Data extends Mage_Core_Helper_Data
         $spaceId = $checkoutSession->getQuote()
             ->getStore()
             ->getConfig('postfinancecheckout_payment/general/space_id');
+        if (empty($spaceId)) {
+            return null;
+        }
 
         /* @var Mage_Core_Model_Cookie $cookie */
         $cookie = Mage::getSingleton('core/cookie');

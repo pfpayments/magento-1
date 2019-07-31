@@ -3,7 +3,7 @@
 /**
  * PostFinance Checkout Magento 1
  *
- * This Magento extension enables to process payments with PostFinance Checkout (https://www.postfinance.ch/).
+ * This Magento extension enables to process payments with PostFinance Checkout (https://www.postfinance.ch/checkout/).
  *
  * @package PostFinanceCheckout_Payment
  * @author customweb GmbH (http://www.customweb.com/)
@@ -70,7 +70,8 @@ class PostFinanceCheckout_Payment_Model_Service_LineItem extends PostFinanceChec
                 'result' => $result,
                 'invoice' => $invoice
             ));
-        return $this->getLineItemHelper()->getItemsByReductionAmount($result->items, $amount);
+        return $this->getLineItemHelper()->getItemsByReductionAmount($result->items, $amount,
+            $invoice->getOrderCurrencyCode());
     }
 
     /**
@@ -148,7 +149,9 @@ class PostFinanceCheckout_Payment_Model_Service_LineItem extends PostFinanceChec
                 'entity' => $entity
             ));
         return $this->getLineItemHelper()->cleanupLineItems($result->items, $entity->getGrandTotal(),
-            $this->getCurrencyCode($entity));
+            $this->getCurrencyCode($entity),
+            Mage::getStoreConfig('postfinancecheckout_payment/line_item/enforce_consistency', $entity->getStore()),
+            $entity instanceof Mage_Sales_Model_Order ? $entity->getFullTaxInfo() : array());
     }
 
     /**

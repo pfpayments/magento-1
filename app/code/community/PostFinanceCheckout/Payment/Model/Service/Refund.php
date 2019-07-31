@@ -3,7 +3,7 @@
 /**
  * PostFinance Checkout Magento 1
  *
- * This Magento extension enables to process payments with PostFinance Checkout (https://www.postfinance.ch/).
+ * This Magento extension enables to process payments with PostFinance Checkout (https://www.postfinance.ch/checkout/).
  *
  * @package PostFinanceCheckout_Payment
  * @author customweb GmbH (http://www.customweb.com/)
@@ -89,13 +89,27 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
         $baseLineItems = $this->getBaseLineItems($creditmemo->getOrder()
             ->getPostfinancecheckoutSpaceId(), $transaction);
 
-        $reductions = $this->getProductReductions($creditmemo, $baseLineItems);
-        $shippingReduction = $this->getShippingReduction($creditmemo);
-        if ($shippingReduction != null) {
-            $reductions[] = $shippingReduction;
-        }
+        /* @var PostFinanceCheckout_Payment_Helper_LineItem $lineItemHelper */
+        $lineItemHelper = Mage::helper('postfinancecheckout_payment/lineItem');
+        if ($this->compareAmounts($lineItemHelper->getTotalAmountIncludingTax($baseLineItems),
+            $creditmemo->getGrandTotal(), $creditmemo->getOrderCurrencyCode()) == 0) {
+            $reductions = array();
+            foreach ($baseLineItems as $lineItem) {
+                $reduction = new \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate();
+                $reduction->setLineItemUniqueId($lineItem->getUniqueId());
+                $reduction->setQuantityReduction($lineItem->getQuantity());
+                $reduction->setUnitPriceReduction(0);
+                $reductions[] = $reduction;
+            }
+        } else {
+            $reductions = $this->getProductReductions($creditmemo, $baseLineItems);
+            $shippingReduction = $this->getShippingReduction($creditmemo);
+            if ($shippingReduction != null) {
+                $reductions[] = $shippingReduction;
+            }
 
-        $reductions = $this->fixReductions($creditmemo, $transaction, $reductions, $baseLineItems);
+            $reductions = $this->fixReductions($creditmemo, $transaction, $reductions, $baseLineItems);
+        }
 
         $refund = new \PostFinanceCheckout\Sdk\Model\RefundCreate();
         $refund->setExternalId(uniqid($creditmemo->getOrderId() . '-'));

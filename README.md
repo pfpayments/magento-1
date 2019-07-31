@@ -1,7 +1,7 @@
 # PostFinance Checkout Magento 1
-This repository contains the Magento 1 extension that enables to process payments with [PostFinance Checkout](https://www.postfinance.ch/).
+This repository contains the Magento 1 extension that enables to process payments with [PostFinance Checkout](https://www.postfinance.ch/checkout/).
 
-###### To use this extension, a [PostFinance Checkout](https://www.postfinance.ch/) account is required.
+###### To use this extension, a [PostFinance Checkout](https://www.postfinance.ch/checkout/) account is required.
 
 ## Requirements
 
@@ -10,7 +10,7 @@ This repository contains the Magento 1 extension that enables to process payment
 
 ## Documentation
 
-* [Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/magento-1/1.0.50/docs/en/documentation.html)
+* [Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/magento-1/1.0.51/docs/en/documentation.html)
 
 ## Supported One-Step Checkouts
 
@@ -30,4 +30,4 @@ For Magento 1.6.x you need to install the [Magento compatibility module](https:/
 
 ## License
 
-Please see the [license file](https://github.com/pfpayments/magento-1/blob/1.0.50/LICENSE) for more information.
+Please see the [license file](https://github.com/pfpayments/magento-1/blob/1.0.51/LICENSE) for more information.

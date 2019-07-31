@@ -3,7 +3,7 @@
 /**
  * PostFinance Checkout Magento 1
  *
- * This Magento extension enables to process payments with PostFinance Checkout (https://www.postfinance.ch/).
+ * This Magento extension enables to process payments with PostFinance Checkout (https://www.postfinance.ch/checkout/).
  *
  * @package PostFinanceCheckout_Payment
  * @author customweb GmbH (http://www.customweb.com/)
@@ -413,8 +413,8 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
      * @param bool $chargeFlow
      */
     protected function assembleOrderTransactionData(Mage_Sales_Model_Order $order,
-        Mage_Sales_Model_Order_Invoice $invoice,
-        \PostFinanceCheckout\Sdk\Model\AbstractTransactionPending $transaction, $chargeFlow = false)
+        Mage_Sales_Model_Order_Invoice $invoice, \PostFinanceCheckout\Sdk\Model\TransactionPending $transaction,
+        $chargeFlow = false)
     {
         $transaction->setCurrency($order->getOrderCurrencyCode());
         $transaction->setBillingAddress($this->getOrderBillingAddress($order));
@@ -443,6 +443,8 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
         /* @var PostFinanceCheckout_Payment_Model_Service_LineItem $lineItems */
         $lineItems = Mage::getSingleton('postfinancecheckout_payment/service_lineItem');
         $transaction->setLineItems($lineItems->collectLineItems($order));
+        $this->logAdjustmentLineItemInfo($order, $transaction);
+
         $transaction->setMerchantReference($order->getIncrementId());
         $transaction->setInvoiceMerchantReference($invoice->getIncrementId());
         if ($chargeFlow) {
@@ -470,6 +472,30 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
                         'secret' => $this->getHelper()
                             ->hash($order->getId())
                     )) . '?utm_nooverride=1');
+        }
+    }
+
+    /**
+     * Checks whether an adjustment line item has been added to the transaction and adds a log message if so.
+     *
+     * @param Mage_Sales_Model_Order $order
+     * @param \PostFinanceCheckout\Sdk\Model\TransactionPending $transaction
+     */
+    protected function logAdjustmentLineItemInfo(Mage_Sales_Model_Order $order,
+        \PostFinanceCheckout\Sdk\Model\TransactionPending $transaction)
+    {
+        foreach ($transaction->getLineItems() as $lineItem) {
+            if ($lineItem->getUniqueId() == 'adjustment') {
+                $expectedSum = Mage::helper('postfinancecheckout_payment/lineItem')->getTotalAmountIncludingTax(
+                    $transaction->getLineItems()) - $lineItem->getAmountIncludingTax();
+                Mage::log(
+                    'An adjustment line item has been added to the transaction ' . $transaction->getId() .
+                    ', because the line item total amount of ' .
+                    $this->roundAmount($order->getGrandTotal(), $order->getOrderCurrencyCode()) .
+                    ' did not match the invoice amount of ' . $expectedSum . ' of the order ' . $order->getId() . '.',
+                    null, 'postfinancecheckout.log');
+                return;
+            }
         }
     }
 

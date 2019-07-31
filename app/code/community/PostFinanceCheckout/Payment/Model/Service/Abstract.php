@@ -3,7 +3,7 @@
 /**
  * PostFinance Checkout Magento 1
  *
- * This Magento extension enables to process payments with PostFinance Checkout (https://www.postfinance.ch/).
+ * This Magento extension enables to process payments with PostFinance Checkout (https://www.postfinance.ch/checkout/).
  *
  * @package PostFinanceCheckout_Payment
  * @author customweb GmbH (http://www.customweb.com/)
@@ -47,6 +47,19 @@ class PostFinanceCheckout_Payment_Model_Service_Abstract
     protected function roundAmount($amount, $currencyCode)
     {
         return round($amount, $this->getCurrencyFractionDigits($currencyCode));
+    }
+
+    /**
+     * Compares the given amounts.
+     *
+     * @param float $amount1
+     * @param float $amount2
+     * @param string $currencyCode
+     * @return number
+     */
+    protected function compareAmounts($amount1, $amount2, $currencyCode)
+    {
+        return $this->roundAmount($amount1, $currencyCode) - $this->roundAmount($amount2, $currencyCode);
     }
 
     /**

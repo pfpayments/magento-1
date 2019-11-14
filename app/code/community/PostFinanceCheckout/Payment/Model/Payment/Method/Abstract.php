@@ -86,6 +86,10 @@ class PostFinanceCheckout_Payment_Model_Payment_Method_Abstract extends Mage_Pay
 
     public function canVoid(Varien_Object $payment)
     {
+        if (! $payment->getOrder()) {
+            return parent::canVoid($payment);
+        }
+
         if (! parent::canVoid($payment)) {
             return false;
         }

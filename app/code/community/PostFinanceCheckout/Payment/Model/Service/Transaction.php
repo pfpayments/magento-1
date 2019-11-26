@@ -614,6 +614,7 @@ class PostFinanceCheckout_Payment_Model_Service_Transaction extends PostFinanceC
         $createTransaction = new \PostFinanceCheckout\Sdk\Model\TransactionCreate();
         $createTransaction->setCustomersPresence(\PostFinanceCheckout\Sdk\Model\CustomersPresence::VIRTUAL_PRESENT);
         $createTransaction->setAutoConfirmationEnabled(false);
+        $createTransaction->setChargeRetryEnabled(false);
         $this->assembleQuoteTransactionData($quote, $createTransaction);
         $transaction = $this->getTransactionService()->create($spaceId, $createTransaction);
         $quote->setPostfinancecheckoutSpaceId($transaction->getLinkedSpaceId());

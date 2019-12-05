@@ -13,7 +13,7 @@
 <config>
 	<modules>
 		<PostFinanceCheckout_Payment>
-			<version>1.0.55</version>
+			<version>1.0.56</version>
 		</PostFinanceCheckout_Payment>
 	</modules>
 	<global>
@@ -357,8 +357,8 @@
 	<default>
 		<postfinancecheckout_payment>
 			<information>
-				<version>1.0.55</version>
-				<sdk_version>2.0.6</sdk_version>
+				<version>1.0.56</version>
+				<sdk_version>2.0.9</sdk_version>
 			</information>
 			<general>
 				<base_gateway_url>https://www.postfinance-checkout.ch/</base_gateway_url>

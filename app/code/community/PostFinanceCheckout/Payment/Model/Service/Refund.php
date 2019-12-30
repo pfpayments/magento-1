@@ -107,31 +107,32 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
             if ($shippingReduction != null) {
                 $reductions[] = $shippingReduction;
             }
-
-            $reductions = $this->fixReductions($creditmemo, $transaction, $reductions, $baseLineItems);
         }
 
         $refund = new \PostFinanceCheckout\Sdk\Model\RefundCreate();
         $refund->setExternalId(uniqid($creditmemo->getOrderId() . '-'));
-        $refund->setReductions($reductions);
+        
+        if ($this->validateReductions($creditmemo, $transaction, $reductions, $baseLineItems)) {
+            $refund->setReductions($reductions);
+        } else {
+            $refund->setAmount($creditmemo->getGrandTotal());
+        }
+        
         $refund->setTransaction($transaction);
         $refund->setType(\PostFinanceCheckout\Sdk\Model\RefundType::MERCHANT_INITIATED_ONLINE);
         return $refund;
     }
-
+    
     /**
-     * Returns the fixed line item reductions for the creditmemo.
-     *
-     * If the amount of the given reductions does not match the creditmemo's grand total, the amount to refund is
-     * distributed equally to the line items.
+     * Validates whether the given reductions total amount matches the one of the creditmemo.
      *
      * @param Mage_Sales_Model_Order_Creditmemo $creditmemo
      * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
      * @param \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate[] $reductions
      * @param \PostFinanceCheckout\Sdk\Model\LineItem[] $baseLineItems
-     * @return \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate[]
+     * @return boolean
      */
-    protected function fixReductions(Mage_Sales_Model_Order_Creditmemo $creditmemo,
+    protected function validateReductions(Mage_Sales_Model_Order_Creditmemo $creditmemo,
         \PostFinanceCheckout\Sdk\Model\Transaction $transaction, array $reductions, array $baseLineItems)
     {
         /* @var PostFinanceCheckout_Payment_Helper_LineItem $lineItemHelper */
@@ -140,25 +141,9 @@ class PostFinanceCheckout_Payment_Model_Service_Refund extends PostFinanceChecko
             $creditmemo->getOrderCurrencyCode());
 
         if ($reductionAmount != $creditmemo->getGrandTotal()) {
-            $fixedReductions = array();
-            $baseAmount = $lineItemHelper->getTotalAmountIncludingTax($baseLineItems);
-            $rate = $creditmemo->getGrandTotal() / $baseAmount;
-            foreach ($baseLineItems as $lineItem) {
-                if ($lineItem->getQuantity() > 0) {
-                    /* @var Mage_Sales_Model_Order_Creditmemo_Item $item */
-                    $reduction = new \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate();
-                    $reduction->setLineItemUniqueId($lineItem->getUniqueId());
-                    $reduction->setQuantityReduction(0);
-                    $reduction->setUnitPriceReduction(
-                        $this->roundAmount($lineItem->getAmountIncludingTax() * $rate / $lineItem->getQuantity(),
-                            $creditmemo->getOrderCurrencyCode()));
-                    $fixedReductions[] = $reduction;
-                }
-            }
-
-            return $fixedReductions;
+            return false;
         } else {
-            return $reductions;
+            return true;
         }
     }
 

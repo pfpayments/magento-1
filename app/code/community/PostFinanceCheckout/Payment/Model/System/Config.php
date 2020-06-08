@@ -75,6 +75,33 @@ class PostFinanceCheckout_Payment_Model_System_Config
      */
     public function initConfigValues()
     {
+        if (Mage::getConfig() instanceof PostFinanceCheckout_Payment_Model_Core_Config) {
+            $configLoaded = Mage::getConfig()->getNode('postfinancecheckout/config_loaded');
+            if (!$configLoaded) {
+                $configValues = $this->getConfigValues();
+                foreach ($configValues as $path => $value) {
+                    $this->setConfigValue($path, $value);
+                }
+                
+                $this->setConfigValue('postfinancecheckout/config_loaded', true);
+                
+                Mage::getConfig()->saveCache();
+            }
+        } else {
+            $configValues = $this->getConfigValues();
+            foreach ($configValues as $path => $value) {
+                $this->setConfigValue($path, $value);
+            }
+        }
+    }
+    
+    /**
+     * Returns the dynamic payment method config values.
+     * 
+     * @return array
+     */
+    protected function getConfigValues()
+    {
         $configValues = array();
         if (($cachedValues = Mage::app()->loadCache(self::VALUES_CACHE_ID))) {
             $configValues = json_decode($cachedValues);
@@ -82,12 +109,12 @@ class PostFinanceCheckout_Payment_Model_System_Config
             if (! $this->isTableExists()) {
                 return;
             }
-
+            
             $websiteMap = array();
             foreach (Mage::app()->getWebsites() as $website) {
                 $websiteMap[$website->getConfig('postfinancecheckout_payment/general/space_id')][] = $website;
             }
-
+            
             /* @var PostFinanceCheckout_Payment_Model_Resource_PaymentMethodConfiguration_Collection $collection */
             $collection = Mage::getModel('postfinancecheckout_payment/entity_paymentMethodConfiguration')->getCollection();
             foreach ($collection as $paymentMethod) {
@@ -95,16 +122,16 @@ class PostFinanceCheckout_Payment_Model_System_Config
                 if (isset($websiteMap[$paymentMethod->getSpaceId()])) {
                     $basePath = '/payment/postfinancecheckout_payment_' . $paymentMethod->getId() . '/';
                     $active = $paymentMethod->getState() ==
-                        PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration::STATE_ACTIVE ? 1 : 0;
+                    PostFinanceCheckout_Payment_Model_Entity_PaymentMethodConfiguration::STATE_ACTIVE ? 1 : 0;
                     $model = 'postfinancecheckout_payment/paymentMethod' . $paymentMethod->getId();
                     $action = Mage_Payment_Model_Method_Abstract::ACTION_AUTHORIZE;
-
+                    
                     $configValues['stores/admin' . $basePath . 'active'] = $active;
                     $configValues['stores/admin' . $basePath . 'title'] = $this->getPaymentMethodTitle($paymentMethod,
                         'en-US');
                     $configValues['stores/admin' . $basePath . 'model'] = $model;
                     $configValues['stores/admin' . $basePath . 'payment_action'] = $action;
-
+                    
                     foreach ($websiteMap[$paymentMethod->getSpaceId()] as $website) {
                         $configValues['websites/' . $website->getCode() . $basePath . 'active'] = $active;
                         $configValues['websites/' . $website->getCode() . $basePath . 'title'] = $this->getPaymentMethodTitle(
@@ -116,7 +143,7 @@ class PostFinanceCheckout_Payment_Model_System_Config
                         $configValues['websites/' . $website->getCode() . $basePath . 'show_image'] = 1;
                         $configValues['websites/' . $website->getCode() . $basePath . 'model'] = $model;
                         $configValues['websites/' . $website->getCode() . $basePath . 'payment_action'] = $action;
-
+                        
                         foreach ($website->getStores() as $store) {
                             /* @var Mage_Core_Model_Store $store */
                             $configValues['stores/' . $store->getCode() . $basePath . 'active'] = $active;
@@ -138,10 +165,7 @@ class PostFinanceCheckout_Payment_Model_System_Config
                     Mage_Core_Model_Config::CACHE_TAG
                 ));
         }
-
-        foreach ($configValues as $path => $value) {
-            $this->setConfigValue($path, $value);
-        }
+        return $configValues;
     }
 
     /**

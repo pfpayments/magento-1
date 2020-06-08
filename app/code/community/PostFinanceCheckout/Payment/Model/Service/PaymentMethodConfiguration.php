@@ -123,6 +123,7 @@ class PostFinanceCheckout_Payment_Model_Service_PaymentMethodConfiguration exten
         $this->createPaymentMethodModelClasses();
         Mage::app()->removeCache(PostFinanceCheckout_Payment_Model_System_Config::SYSTEM_CACHE_ID);
         Mage::app()->removeCache(PostFinanceCheckout_Payment_Model_System_Config::VALUES_CACHE_ID);
+        Mage::app()->getCacheInstance()->cleanType(Mage_Core_Model_Config::CACHE_TAG);
     }
 
     /**

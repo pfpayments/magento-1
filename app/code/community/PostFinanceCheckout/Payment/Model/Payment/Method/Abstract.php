@@ -184,6 +184,8 @@ class PostFinanceCheckout_Payment_Model_Payment_Method_Abstract extends Mage_Pay
                     }
                 } catch (Exception $e) {
                     Mage::log(
+                        (!empty($quote->getPostfinancecheckoutSpaceId()) ? '[Space ' . $quote->getPostfinancecheckoutSpaceId() . '] ' : '' ) .
+                        (!empty($quote->getPostfinancecheckoutTransactionId()) ? '[Transaction ' . $quote->getPostfinancecheckoutTransactionId() . '] ' : '' ) .
                         'The payment method ' . $this->getTitle() . ' is not available because of an exception: ' .
                         $e->getMessage(), null, 'postfinancecheckout.log');
                     return false;

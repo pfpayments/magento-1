@@ -54,7 +54,7 @@ final class ApiClient {
 	 *
 	 * @var string
 	 */
-	private $userAgent = 'PHP-Client/2.0.18/php';
+	private $userAgent = 'PHP-Client/2.1.4/php';
 
 	/**
 	 * The path to the certificate authority file.
@@ -76,6 +76,7 @@ final class ApiClient {
 	 * @var integer
 	 */
 	private $connectionTimeout = 20;
+	CONST CONNECTION_TIMEOUT = 20;
 
 	/**
 	 * The http client type to use for communication.
@@ -238,6 +239,16 @@ final class ApiClient {
 		}
 
 		$this->connectionTimeout = $connectionTimeout;
+		return $this;
+	}
+
+	/**
+	 * Resets the connection timeout in seconds.
+	 *
+	 * @return ApiClient
+	 */
+	public function resetConnectionTimeout() {
+		$this->connectionTimeout = self::CONNECTION_TIMEOUT;
 		return $this;
 	}
 
@@ -428,9 +439,11 @@ final class ApiClient {
 	 * @param array  $headerParams the header parameters
 	 * @param string $responseType the expected response type
 	 * @param string $endpointPath the path to the method endpoint before expanding parameters
-	 * @throws ApiException on a non 2xx response
-	 * @throws VersioningException on a versioning/locking problem
-	 * @return mixed
+	 *
+	 * @return \PostFinanceCheckout\Sdk\ApiResponse
+	 * @throws \PostFinanceCheckout\Sdk\ApiException
+	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
+	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 */
 	public function callApi($resourcePath, $method, $queryParams, $postData, $headerParams, $responseType = null, $endpointPath = null) {
 		$request = new HttpRequest($this->getSerializer(), $this->buildRequestUrl($resourcePath, $queryParams), $method, $this->generateUniqueToken());
@@ -703,6 +716,30 @@ final class ApiClient {
         return $this->deliveryIndicationService;
     }
     
+    protected $documentTemplateService;
+
+    /**
+     * @return \PostFinanceCheckout\Sdk\Service\DocumentTemplateService
+     */
+    public function getDocumentTemplateService() {
+        if(is_null($this->documentTemplateService)){
+            $this->documentTemplateService = new \PostFinanceCheckout\Sdk\Service\DocumentTemplateService($this);
+        }
+        return $this->documentTemplateService;
+    }
+    
+    protected $documentTemplateTypeService;
+
+    /**
+     * @return \PostFinanceCheckout\Sdk\Service\DocumentTemplateTypeService
+     */
+    public function getDocumentTemplateTypeService() {
+        if(is_null($this->documentTemplateTypeService)){
+            $this->documentTemplateTypeService = new \PostFinanceCheckout\Sdk\Service\DocumentTemplateTypeService($this);
+        }
+        return $this->documentTemplateTypeService;
+    }
+    
     protected $humanUserService;
 
     /**
@@ -797,6 +834,18 @@ final class ApiClient {
             $this->paymentConnectorService = new \PostFinanceCheckout\Sdk\Service\PaymentConnectorService($this);
         }
         return $this->paymentConnectorService;
+    }
+    
+    protected $paymentLinkService;
+
+    /**
+     * @return \PostFinanceCheckout\Sdk\Service\PaymentLinkService
+     */
+    public function getPaymentLinkService() {
+        if(is_null($this->paymentLinkService)){
+            $this->paymentLinkService = new \PostFinanceCheckout\Sdk\Service\PaymentLinkService($this);
+        }
+        return $this->paymentLinkService;
     }
     
     protected $paymentMethodBrandService;
@@ -895,6 +944,18 @@ final class ApiClient {
         return $this->refundService;
     }
     
+    protected $shopifyTransactionService;
+
+    /**
+     * @return \PostFinanceCheckout\Sdk\Service\ShopifyTransactionService
+     */
+    public function getShopifyTransactionService() {
+        if(is_null($this->shopifyTransactionService)){
+            $this->shopifyTransactionService = new \PostFinanceCheckout\Sdk\Service\ShopifyTransactionService($this);
+        }
+        return $this->shopifyTransactionService;
+    }
+    
     protected $spaceService;
 
     /**
@@ -917,6 +978,30 @@ final class ApiClient {
             $this->staticValueService = new \PostFinanceCheckout\Sdk\Service\StaticValueService($this);
         }
         return $this->staticValueService;
+    }
+    
+    protected $tokenService;
+
+    /**
+     * @return \PostFinanceCheckout\Sdk\Service\TokenService
+     */
+    public function getTokenService() {
+        if(is_null($this->tokenService)){
+            $this->tokenService = new \PostFinanceCheckout\Sdk\Service\TokenService($this);
+        }
+        return $this->tokenService;
+    }
+    
+    protected $tokenVersionService;
+
+    /**
+     * @return \PostFinanceCheckout\Sdk\Service\TokenVersionService
+     */
+    public function getTokenVersionService() {
+        if(is_null($this->tokenVersionService)){
+            $this->tokenVersionService = new \PostFinanceCheckout\Sdk\Service\TokenVersionService($this);
+        }
+        return $this->tokenVersionService;
     }
     
     protected $transactionCommentService;

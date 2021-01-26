@@ -78,6 +78,14 @@ class PostFinanceCheckout_Payment_Model_Service_Token extends PostFinanceCheckou
 
             return;
         }
+        
+        if (! $tokenVersion->getPaymentConnectorConfiguration()) {
+            if ($info->getId()) {
+                $info->delete();
+            }
+            
+            return;
+        }
 
         $info->setCustomerId($tokenVersion->getToken()
             ->getCustomerId());

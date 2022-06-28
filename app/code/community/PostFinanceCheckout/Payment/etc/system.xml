@@ -3,7 +3,7 @@
 /**
  * PostFinance Checkout Magento 1
  *
- * This Magento extension enables to process payments with PostFinance Checkout (https://www.postfinance.ch/checkout/).
+ * This Magento extension enables to process payments with PostFinance Checkout (https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/).
  *
  * @package PostFinanceCheckout_Payment
  * @author wallee AG (http://www.wallee.com/)
@@ -30,7 +30,7 @@
 					<show_in_default>1</show_in_default>
 					<show_in_website>1</show_in_website>
 					<show_in_store>1</show_in_store>
-					<comment><![CDATA[If you need help setting up the PostFinance Checkout extension, check out the <a href="https://plugin-documentation.postfinance-checkout.ch/pfpayments/magento-1/1.1.5/docs/en/documentation.html" target="_blank">documentation</a>.]]></comment>
+					<comment><![CDATA[If you need help setting up the PostFinance Checkout extension, check out the <a href="https://plugin-documentation.postfinance-checkout.ch/pfpayments/magento-1/1.1.6/docs/en/documentation.html" target="_blank">documentation</a>.]]></comment>
 					<fields>
 						<version translate="label">
 							<label>Module Version</label>
@@ -57,7 +57,7 @@
 					<show_in_default>1</show_in_default>
 					<show_in_website>1</show_in_website>
 					<show_in_store>1</show_in_store>
-					<comment><![CDATA[To use this extension, a PostFinance Checkout account is required. Sign up on <a href="https://www.postfinance.ch/checkout/" target="_blank">https://www.postfinance.ch/checkout</a>.]]></comment>
+					<comment><![CDATA[To use this extension, a PostFinance Checkout account is required. Sign up on <a href="https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/" target="_blank">https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html</a>.]]></comment>
 					<fields>
 						<api_data_heading translate="label">
                             <label>Application User Details</label>

@@ -3,7 +3,7 @@
 /**
  * PostFinance Checkout Magento 1
  *
- * This Magento extension enables to process payments with PostFinance Checkout (https://www.postfinance.ch/checkout/).
+ * This Magento extension enables to process payments with PostFinance Checkout (https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/).
  *
  * @package PostFinanceCheckout_Payment
  * @author wallee AG (http://www.wallee.com/)
@@ -13,7 +13,7 @@
 <config>
 	<modules>
 		<PostFinanceCheckout_Payment>
-			<version>1.1.5</version>
+			<version>1.1.6</version>
 		</PostFinanceCheckout_Payment>
 	</modules>
 	<global>
@@ -357,7 +357,7 @@
 	<default>
 		<postfinancecheckout_payment>
 			<information>
-				<version>1.1.5</version>
+				<version>1.1.6</version>
 				<sdk_version>2.1.5</sdk_version>
 			</information>
 			<general>

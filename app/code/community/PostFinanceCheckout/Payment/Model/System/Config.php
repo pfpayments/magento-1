@@ -78,7 +78,7 @@ class PostFinanceCheckout_Payment_Model_System_Config
         if (Mage::getConfig() instanceof PostFinanceCheckout_Payment_Model_Core_Config) {
             $configLoaded = Mage::getConfig()->getNode('postfinancecheckout/config_loaded');
             if (!$configLoaded) {
-                Mage::getModel('wallee_payment/observer_core')->addAutoloader();
+                Mage::getModel('postfinancecheckout_payment/observer_core')->addAutoloader();
                 Mage::app()->reinitStores();
                 
                 $configValues = $this->getConfigValues();
